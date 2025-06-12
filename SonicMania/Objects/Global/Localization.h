@@ -152,4 +152,33 @@ void Localization_GetString(String *string, uint8 id);
 void Localization_GetZoneName(String *string, uint8 zone);
 void Localization_GetZoneInitials(String *string, uint8 zone);
 
+#if PLATFORM_PS3
+#include <cell/sysmodule.h>
+#include <cell/sysutil_sysparam.h> // For system parameters including language
+
+// Enum for PS3 System Language codes, based on standard PS3 SDK values
+// These might be defined in the actual <cell/sysutil_sysparam.h> but are added here for clarity
+// and in case the SDK version used by ps3toolchain doesn't expose them directly in a way we expect.
+typedef enum {
+    PS3_LANGUAGE_JAPANESE              = 0,
+    PS3_LANGUAGE_ENGLISH_US            = 1,
+    PS3_LANGUAGE_FRENCH                = 2,
+    PS3_LANGUAGE_SPANISH               = 3,
+    PS3_LANGUAGE_GERMAN                = 4,
+    PS3_LANGUAGE_ITALIAN               = 5,
+    PS3_LANGUAGE_DUTCH                 = 6,
+    PS3_LANGUAGE_PORTUGUESE_PT         = 7,
+    PS3_LANGUAGE_RUSSIAN               = 8,
+    PS3_LANGUAGE_KOREAN                = 9,
+    PS3_LANGUAGE_CHINESE_TRADITIONAL   = 10,
+    PS3_LANGUAGE_CHINESE_SIMPLIFIED    = 11,
+    PS3_LANGUAGE_ENGLISH_UK            = 12,
+    PS3_LANGUAGE_PORTUGUESE_BR         = 13,
+    // Add other languages as needed
+} PS3_SystemLanguage;
+
+// Function prototype for getting the PS3 system language
+int32 PS3_GetSystemLanguage(void);
+
+#endif // PLATFORM_PS3
 #endif //! OBJ_LOCALIZATION_H

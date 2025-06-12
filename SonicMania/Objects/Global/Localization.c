@@ -27,7 +27,62 @@ void Localization_StageLoad(void)
         Localization_LoadStrings();
     }
     else {
+#if PLATFORM_PS3
+        int32 ps3Lang = PS3_GetSystemLanguage();
+        switch (ps3Lang) {
+            case PS3_LANGUAGE_JAPANESE:
+                Localization->language = LANGUAGE_JP;
+                break;
+            case PS3_LANGUAGE_ENGLISH_US:
+            case PS3_LANGUAGE_ENGLISH_UK: // Map UK English to the game's generic English
+                Localization->language = LANGUAGE_EN;
+                break;
+            case PS3_LANGUAGE_FRENCH:
+                Localization->language = LANGUAGE_FR;
+                break;
+            case PS3_LANGUAGE_SPANISH:
+                Localization->language = LANGUAGE_SP;
+                break;
+            case PS3_LANGUAGE_GERMAN:
+                Localization->language = LANGUAGE_GE;
+                break;
+            case PS3_LANGUAGE_ITALIAN:
+                Localization->language = LANGUAGE_IT;
+                break;
+            case PS3_LANGUAGE_KOREAN:
+#if GAME_VERSION != VER_100 // Korean was added in later versions
+                Localization->language = LANGUAGE_KO;
+                break;
+#else
+                Localization->language = sku_language; // Fallback for older versions
+                break;
+#endif
+            case PS3_LANGUAGE_CHINESE_SIMPLIFIED:
+#if GAME_VERSION != VER_100 // Simplified Chinese was added in later versions
+                Localization->language = LANGUAGE_SC;
+                break;
+#else
+                Localization->language = sku_language; // Fallback for older versions
+                break;
+#endif
+            case PS3_LANGUAGE_CHINESE_TRADITIONAL:
+#if GAME_VERSION != VER_100 // Traditional Chinese was added in later versions
+                Localization->language = LANGUAGE_TC;
+                break;
+#else
+                Localization->language = sku_language; // Fallback for older versions
+                break;
+#endif
+            // Add other mappings as necessary, e.g., Portuguese, Russian, Dutch if the game supports them
+            // For now, unhandled languages will use sku_language
+            default:
+                Localization->language = sku_language; // Fallback to default SKU language
+                break;
+        }
+#else
+        // Original logic for non-PS3 platforms
         Localization->language = sku_language;
+#endif
         Localization_LoadStrings();
     }
 }
@@ -159,3 +214,33 @@ void Localization_EditorLoad(void) {}
 #endif
 
 void Localization_Serialize(void) {}
+
+#if PLATFORM_PS3
+#include <cell/sysmodule.h>
+#include <cell/sysutil_sysparam.h> // Ensure this is included if not already via Localization.h (though it should be)
+
+// Function to get the PS3 system language
+int32 PS3_GetSystemLanguage(void) {
+    int32 language = PS3_LANGUAGE_ENGLISH_US; // Default to English US
+
+    // Load the system utility module for system parameters
+    int32 result = cellSysmoduleLoadModule(CELL_SYSMODULE_SYSPARAM);
+    if (result == CELL_OK) {
+        int sysLanguage;
+        // Get the system language
+        result = cellSysutilGetSystemLanguage(&sysLanguage);
+        if (result == CELL_OK) {
+            language = (int32)sysLanguage;
+        } else {
+            // Failed to get language, RSDK::PrintF(PRINT_ERROR, "Failed to get PS3 system language: 0x%x", result);
+            // Keep default language
+        }
+        // Unload the system utility module
+        cellSysmoduleUnloadModule(CELL_SYSMODULE_SYSPARAM);
+    } else {
+        // Failed to load module, RSDK::PrintF(PRINT_ERROR, "Failed to load CELL_SYSMODULE_SYSPARAM: 0x%x", result);
+        // Keep default language
+    }
+    return language;
+}
+#endif // PLATFORM_PS3
