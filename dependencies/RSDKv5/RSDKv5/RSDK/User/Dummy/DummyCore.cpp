@@ -1,3 +1,8 @@
+#if RETRO_PLATFORM == RETRO_PS3
+#include <SDL2/SDL.h>
+#include <string.h> // For strncmp
+#endif
+
 #if RETRO_REV02
 DummyCore *dummyCore = NULL;
 
@@ -102,7 +107,43 @@ void DummyCore::StageLoad()
 
 bool32 DummyCore::CheckFocusLost() { return focusState != 0; }
 
-int32 DummyCore::GetUserLanguage() { return GetAPIValue(GetAPIValueID("SYSTEM_LANGUAGE", 0)); }
+int32 DummyCore::GetUserLanguage() {
+#if RETRO_PLATFORM == RETRO_PS3
+    // Attempt to get system language using SDL
+    // SDL_GetPreferredLocales returns a list of locales separated by commas, e.g., "es-ES,en-US".
+    // We'll take the first one from the list.
+    const char *sdlLocale = SDL_GetPrefLocales();
+    if (sdlLocale && sdlLocale[0]) {
+        // Check for primary language tags (e.g., "en", "fr", "es")
+        if (strncmp(sdlLocale, "en", 2) == 0) {
+            return LANGUAGE_EN;
+        } else if (strncmp(sdlLocale, "fr", 2) == 0) {
+            return LANGUAGE_FR;
+        } else if (strncmp(sdlLocale, "it", 2) == 0) {
+            return LANGUAGE_IT;
+        } else if (strncmp(sdlLocale, "de", 2) == 0) { // German
+            return LANGUAGE_GE;
+        } else if (strncmp(sdlLocale, "es", 2) == 0) { // Spanish
+            return LANGUAGE_SP;
+        } else if (strncmp(sdlLocale, "ja", 2) == 0) { // Japanese
+            return LANGUAGE_JP;
+        } else if (strncmp(sdlLocale, "ko", 2) == 0) { // Korean
+            return LANGUAGE_KO;
+        } else if (strncmp(sdlLocale, "zh-CN", 5) == 0 || strncmp(sdlLocale, "zh_CN", 5) == 0 || strncmp(sdlLocale, "sc", 2) == 0) { // Simplified Chinese
+            return LANGUAGE_SC;
+        } else if (strncmp(sdlLocale, "zh-TW", 5) == 0 || strncmp(sdlLocale, "zh_TW", 5) == 0 || strncmp(sdlLocale, "tc", 2) == 0) { // Traditional Chinese
+            return LANGUAGE_TC;
+        }
+        // Fallback for unmapped languages found via SDL
+        return LANGUAGE_EN;
+    }
+    // Fallback if SDL locale is null, empty, or couldn't be determined
+    return LANGUAGE_EN;
+#else
+    // Original behavior for other platforms using DummyCore
+    return GetAPIValue(GetAPIValueID("SYSTEM_LANGUAGE", 0));
+#endif
+}
 int32 DummyCore::GetUserRegion() { return GetAPIValue(GetAPIValueID("SYSTEM_REGION", 0)); }
 int32 DummyCore::GetUserPlatform() { return GetAPIValue(GetAPIValueID("SYSTEM_PLATFORM", 0)); }
 bool32 DummyCore::GetConfirmButtonFlip() { return GetAPIValue(GetAPIValueID("SYSTEM_CONFIRM_FLIP", 0)); }
