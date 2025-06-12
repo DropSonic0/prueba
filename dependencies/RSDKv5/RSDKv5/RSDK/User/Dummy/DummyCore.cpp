@@ -109,6 +109,7 @@ bool32 DummyCore::CheckFocusLost() { return focusState != 0; }
 
 int32 DummyCore::GetUserLanguage() {
 #if RETRO_PLATFORM == RETRO_PS3
+#if (SDL_COMPILEDVERSION >= SDL_VERSIONNUM(2, 0, 6))
     // Attempt to get system language using SDL
     // SDL_GetPreferredLocales returns a list of locales separated by commas, e.g., "es-ES,en-US".
     // We'll take the first one from the list.
@@ -139,6 +140,10 @@ int32 DummyCore::GetUserLanguage() {
     }
     // Fallback if SDL locale is null, empty, or couldn't be determined
     return LANGUAGE_EN;
+#else
+    // Fallback for older SDL versions on PS3
+    return GetAPIValue(GetAPIValueID("SYSTEM_LANGUAGE", 0));
+#endif
 #else
     // Original behavior for other platforms using DummyCore
     return GetAPIValue(GetAPIValueID("SYSTEM_LANGUAGE", 0));
