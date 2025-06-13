@@ -570,7 +570,9 @@ void PauseMenu_State_SetupButtons(void)
         if (!self->disableRestart)
             PauseMenu_AddButton(1, PauseMenu_RestartButtonCB);
 
-        PauseMenu_AddButton(2, PauseMenu_ExitButtonCB);
+        if (sku_platform == PLATFORM_PC || sku_platform == PLATFORM_DEV) {
+            PauseMenu_AddButton(2, PauseMenu_ExitButtonCB);
+        }
 
         PauseMenu_HandleButtonPositions();
         PauseMenu_SetupMenu();

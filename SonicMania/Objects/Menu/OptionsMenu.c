@@ -400,6 +400,9 @@ void OptionsMenu_ApplyChangesDlg_BackPress_NoCB(void)
 
 void OptionsMenu_VideoMenuButton_ActionCB(void)
 {
+#ifdef PS3_CONSOLE_MODE
+    UIControl_MatchMenuTag("Video"); 
+#else
     if (sku_platform == PLATFORM_PC || sku_platform == PLATFORM_DEV) {
         RSDK.SetVideoSetting(VIDEOSETTING_STORE, false);
 #if MANIA_USE_EGS
@@ -410,6 +413,7 @@ void OptionsMenu_VideoMenuButton_ActionCB(void)
     else {
         UIControl_MatchMenuTag("Video");
     }
+#endif
 }
 void OptionsMenu_SoundMenuButton_ActionCB(void) { UIControl_MatchMenuTag("Sound"); }
 void OptionsMenu_LanguageMenuButton_ActionCB(void) { UIControl_MatchMenuTag("Language"); }

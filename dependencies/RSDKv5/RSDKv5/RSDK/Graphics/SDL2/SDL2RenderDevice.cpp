@@ -450,7 +450,7 @@ void RenderDevice::InitVertexBuffer()
 
 bool RenderDevice::InitGraphicsAPI()
 {
-    videoSettings.shaderSupport = false;
+    videoSettings.shaderSupport = true;
 
     viewSize.x = 0;
     viewSize.y = 0;

@@ -288,19 +288,59 @@ void MainMenu_SetupActions(void)
     foreach_all(UIButton, button)
     {
         if (button->listID == 1) {
-            if (button->frameID == 7) {
+            if (button->frameID == 7) { // Exit button
+#ifdef PS3_CONSOLE_MODE
+                // On PS3_CONSOLE_MODE, always remove the Exit button
+                EntityUIControl *control = MainMenu->menuControl;
+                if (control) {
+                    int button_idx_to_remove = -1;
+                    for(int idx = 0; idx < control->buttonCount; ++idx) {
+                        if (control->buttons[idx] == button) {
+                            button_idx_to_remove = idx;
+                            break;
+                        }
+                    }
+
+                    if (button_idx_to_remove != -1) {
+                        destroyEntity(control->buttons[button_idx_to_remove]);
+                        for (int idx = button_idx_to_remove; idx < control->buttonCount - 1; ++idx) {
+                            control->buttons[idx] = control->buttons[idx+1];
+                        }
+                        control->buttons[control->buttonCount-1] = NULL;
+                        control->buttonCount--;
+                        // This rowCount decrement assumes a single column layout or that each button is a row.
+                        // If layout is more complex, this might need more sophisticated handling.
+                        control->rowCount--; 
+                    } else {
+                        // Button not found in control's list, or already destroyed.
+                        // As a fallback, ensure it's not active/visible.
+                        button->active = ACTIVE_NEVER;
+                        button->visible = false;
+                    }
+                } else {
+                     // No control object? Highly unlikely, but make button inactive just in case.
+                    button->active = ACTIVE_NEVER;
+                    button->visible = false;
+                }
+#else
+                // Original logic for non-PS3_CONSOLE_MODE
                 if (sku_platform != PLATFORM_PC && sku_platform != PLATFORM_DEV) {
                     EntityUIControl *control = MainMenu->menuControl;
-
-                    // Remove "Exit" Button if not on PC or DEV platform
+                    // Original removal logic
                     destroyEntity(button);
                     --control->buttonCount;
                     --control->rowCount;
-                    control->buttons[6] = NULL;
+                    // This assumes the exit button was at index 6 and it's now removed.
+                    // If button order or count changes before this, this could be problematic.
+                    if (control->buttonCount >= 6 && control->buttons[6] == button) 
+                        control->buttons[6] = NULL; 
+                    // A safer general removal from an array would be to find it and shift,
+                    // but sticking to original's directness for the non-PS3 path.
                 }
                 else {
                     button->actionCB = MainMenu_ExitButton_ActionCB;
                 }
+#endif
             }
             else {
                 button->actionCB = MainMenu_MenuButton_ActionCB;

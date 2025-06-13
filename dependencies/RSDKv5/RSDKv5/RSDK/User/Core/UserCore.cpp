@@ -361,6 +361,12 @@ void RSDK::LoadSettingsINI()
         videoSettings.shaderSupport = iniparser_getboolean(ini, "Video:shaderSupport", true);
         videoSettings.shaderID      = iniparser_getint(ini, "Video:screenShader", SHADER_NONE);
 
+#if RETRO_PLATFORM == RETRO_PS3
+        if (videoSettings.shaderID == SHADER_NONE) {
+            videoSettings.shaderID = SHADER_CRT_YEETRON;
+        }
+#endif
+
 #if !RETRO_USE_ORIGINAL_CODE
         customSettings.maxPixWidth = iniparser_getint(ini, "Video:maxPixWidth", DEFAULT_PIXWIDTH);
 #endif
@@ -501,6 +507,11 @@ void RSDK::LoadSettingsINI()
         videoSettings.fsHeight       = 0;
         videoSettings.refreshRate    = 60;
         videoSettings.shaderID       = SHADER_NONE;
+
+#if RETRO_PLATFORM == RETRO_PS3
+        // videoSettings.shaderID is already SHADER_NONE here, so we can directly set it.
+        videoSettings.shaderID = SHADER_CRT_YEETRON;
+#endif
 
         engine.streamsEnabled = true;
         engine.streamVolume   = 1.0f;

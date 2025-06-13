@@ -607,7 +607,7 @@ struct RetroEngine {
 #endif
 
     bool32 devMenu        = false;
-    bool32 consoleEnabled = false;
+    bool32 consoleEnabled = (RETRO_PLATFORM == RETRO_PS3) ? true : false;
 
     bool32 confirmFlip = false; // swaps A/B, used for nintendo and etc controllers
     bool32 XYFlip      = false; // swaps X/Y, used for nintendo and etc controllers
