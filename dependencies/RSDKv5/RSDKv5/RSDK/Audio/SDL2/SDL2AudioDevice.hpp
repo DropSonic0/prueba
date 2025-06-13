@@ -15,10 +15,18 @@ public:
 
     inline static void HandleStreamLoad(ChannelInfo *channel, bool32 async)
     {
-        if (async)
-            SDL_CreateThread((SDL_ThreadFunction)LoadStream, "LoadStream", (void *)channel);
-        else
+        if (async) {
+            SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction)LoadStream, "LoadStream", (void *)channel);
+            if (thread) {
+                SDL_DetachThread(thread); // Detach the thread
+            } else {
+                // Fallback to synchronous loading if thread creation failed
+                // Optionally, add RSDK::PrintLog(PRINT_ERROR, "Failed to create SDL_Thread for LoadStream, loading synchronously.");
+                LoadStream(channel); 
+            }
+        } else {
             LoadStream(channel);
+        }
     }
 
 private:

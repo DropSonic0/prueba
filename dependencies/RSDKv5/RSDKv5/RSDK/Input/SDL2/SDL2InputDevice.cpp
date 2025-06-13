@@ -200,7 +200,7 @@ RSDK::SKU::InputDeviceSDL *RSDK::SKU::InitSDL2InputDevice(uint32 id, SDL_GameCon
     device->controllerPtr = game_controller;
 
     device->swapABXY     = false;
-    uint8 controllerType = DEVICE_XBOX;
+    uint8 controllerType = DEVICE_PS4;
 
     const char *name = SDL_GameControllerName(device->controllerPtr);
 
