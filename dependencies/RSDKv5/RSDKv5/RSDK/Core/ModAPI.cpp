@@ -209,7 +209,7 @@ void RSDK::SortMods()
             int32 targetVersion = modList[m].forceVersion ? modList[m].forceVersion : modList[m].targetVersion;
 
             if (modList[m].active && targetVersion != -1 && targetVersion != ENGINE_VERSION) {
-                PrintLog(PRINT_NORMAL, "[MOD] Mod %s disabled due to target version mismatch", modList[m].id.c_str());
+                // PrintLog(PRINT_NORMAL, "[MOD] Mod %s disabled due to target version mismatch", modList[m].id.c_str());
                 modList[m].active = false;
             }
         }
@@ -429,7 +429,7 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
                 }
             }
         } catch (fs::filesystem_error &fe) {
-            PrintLog(PRINT_ERROR, "Mod File Scanning Error: %s", fe.what());
+            // PrintLog(PRINT_ERROR, "Mod File Scanning Error: %s", fe.what());
         }
     }
 
@@ -536,15 +536,15 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
                 bool32 active = iniparser_getboolean(ini, keys[m], false);
                 bool32 loaded = LoadMod(&info, modPath.string(), string(keys[m] + 5), active, getVersion);
                 if (info.id.empty()) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Mod %s doesn't exist!", keys[m] + 5);
+                    // PrintLog(PRINT_NORMAL, "[MOD] Mod %s doesn't exist!", keys[m] + 5);
                     continue;
                 }
                 else if (!loaded) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s.", info.id.c_str(), active ? "Y" : "N");
+                    // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s.", info.id.c_str(), active ? "Y" : "N");
                     info.active = false;
                 }
                 else
-                    PrintLog(PRINT_NORMAL, "[MOD] Loaded mod %s! Active: %s", info.id.c_str(), active ? "Y" : "N");
+                    // PrintLog(PRINT_NORMAL, "[MOD] Loaded mod %s! Active: %s", info.id.c_str(), active ? "Y" : "N");
                 modList.push_back(info);
             }
             delete[] keys;
@@ -573,7 +573,7 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
                 }
             }
         } catch (fs::filesystem_error &fe) {
-            PrintLog(PRINT_ERROR, "Mods folder scanning error: %s", fe.what());
+            // PrintLog(PRINT_ERROR, "Mods folder scanning error: %s", fe.what());
         }
     }
 
@@ -628,7 +628,7 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
 
     ModInfo *cur = currentMod;
 
-    PrintLog(PRINT_NORMAL, "[MOD] Trying to load mod %s...", folder.c_str());
+    // PrintLog(PRINT_NORMAL, "[MOD] Trying to load mod %s...", folder.c_str());
 
     info->fileMap.clear();
     info->excludedFiles.clear();
@@ -675,11 +675,11 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
             info->targetVersion = iniparser_getint(modIni, ":TargetVersion", 5);
             if (info->targetVersion != -1 && ENGINE_VERSION) {
                 if (info->targetVersion < 3 || info->targetVersion > 5) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Invalid target version. Should be 3, 4, or 5");
+                    // PrintLog(PRINT_NORMAL, "[MOD] Invalid target version. Should be 3, 4, or 5");
                     return false;
                 }
                 else if (info->targetVersion != ENGINE_VERSION) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Target version does not match current engine version.");
+                    // PrintLog(PRINT_NORMAL, "[MOD] Target version does not match current engine version.");
                     return false;
                 }
             }
@@ -716,7 +716,7 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                         const ModVersionInfo *modInfo = (const ModVersionInfo *)Link::GetSymbol(linkHandle, "modInfo");
                         if (!modInfo) {
                             // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to find modInfo", file.string().c_str());
+                            // PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to find modInfo", file.string().c_str());
 
                             iniparser_freedict(modIni);
                             currentMod = cur;
@@ -725,8 +725,8 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
 
                         if (modInfo->engineVer != targetModVersion.engineVer) {
                             // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' engineVer %d does not match expected engineVer of %d",
-                                     file.string().c_str(), modInfo->engineVer, targetModVersion.engineVer);
+                            // PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' engineVer %d does not match expected engineVer of %d",
+                                     // file.string().c_str(), modInfo->engineVer, targetModVersion.engineVer);
 
                             iniparser_freedict(modIni);
                             currentMod = cur;
@@ -735,8 +735,8 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
 
                         if (modInfo->modLoaderVer != targetModVersion.modLoaderVer) {
                             // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' modLoaderVer  %d does not match expected modLoaderVer of %d",
-                                     file.string().c_str(), modInfo->modLoaderVer, targetModVersion.modLoaderVer);
+                            // PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' modLoaderVer  %d does not match expected modLoaderVer of %d",
+                                     // file.string().c_str(), modInfo->modLoaderVer, targetModVersion.modLoaderVer);
                         }
 
                         if (linkModLogic) {
@@ -744,18 +744,18 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                             linked = true;
                         }
                         else {
-                            PrintLog(PRINT_ERROR, "[MOD] ERROR: Failed to find 'LinkModLogic' -> %s", Link::GetError());
+                            // PrintLog(PRINT_ERROR, "[MOD] ERROR: Failed to find 'LinkModLogic' -> %s", Link::GetError());
                         }
                         info->unloadMod = (void (*)())Link::GetSymbol(linkHandle, "UnloadMod");
                         info->modLogicHandles.push_back(linkHandle);
                     }
                     else {
-                        PrintLog(PRINT_ERROR, "[MOD] ERROR: Failed to open mod logic file -> %s", Link::GetError());
+                        // PrintLog(PRINT_ERROR, "[MOD] ERROR: Failed to open mod logic file -> %s", Link::GetError());
                     }
 
                     if (!linked) {
                         // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                        PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to link logic '%s'", file.string().c_str());
+                        // PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to link logic '%s'", file.string().c_str());
 
                         iniparser_freedict(modIni);
                         currentMod = cur;
@@ -912,7 +912,7 @@ void RSDK::SaveMods()
 
     SortMods();
 
-    PrintLog(PRINT_NORMAL, "[MOD] Saving mods...");
+    // PrintLog(PRINT_NORMAL, "[MOD] Saving mods...");
 
     if (fs::exists(modPath) && fs::is_directory(modPath)) {
         std::string mod_config = modPath.string() + "/modconfig.ini";
@@ -1556,7 +1556,7 @@ void RSDK::SaveSettings()
         for (pair<string, string> pair : kv.second) WriteText(file, "%s = %s\n", pair.first.c_str(), pair.second.c_str());
     }
     fClose(file);
-    PrintLog(PRINT_NORMAL, "[MOD] Saved mod settings for mod %s", currentMod->id.c_str());
+    // PrintLog(PRINT_NORMAL, "[MOD] Saved mod settings for mod %s", currentMod->id.c_str());
     return;
 }
 

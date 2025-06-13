@@ -52,7 +52,7 @@ void UIUsernamePopup_ShowPopup(void)
     if (entity->state == UIUsernamePopup_State_Init) {
         if (API_GetUsername(&entity->username)) {
 #if MANIA_USE_PLUS
-            LogHelpers_PrintString(&entity->username);
+            // LogHelpers_PrintString(&entity->username);
 #endif
             RSDK.SetSpriteAnimation(UIWidgets->fontFrames, 0, &entity->animator, true, 0);
             RSDK.SetSpriteString(UIWidgets->fontFrames, 0, &entity->username);

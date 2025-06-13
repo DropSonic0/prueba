@@ -225,9 +225,9 @@ void RSDK::SKU::LaunchManual()
     // LaunchManual() just opens the mania manual URL, thats it
 #if RETRO_RENDERDEVICE_SDL2
     // SDL_OpenURL("http://www.sonicthehedgehog.com/mania/manual");
-    PrintLog(PRINT_NORMAL, "DUMMY LaunchManual()");
+    // PrintLog(PRINT_NORMAL, "DUMMY LaunchManual()");
 #else
-    PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
+    // PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
 #endif
 }
 void RSDK::SKU::ExitGame() { RenderDevice::isRunning = false; }
@@ -251,7 +251,7 @@ int32 RSDK::SKU::GetDefaultGamepadType()
 bool32 RSDK::SKU::ShowExtensionOverlay(uint8 overlay)
 {
     switch (overlay) {
-        default: PrintLog(PRINT_POPUP, "Show Extension Overlay: %d", overlay); break;
+        default: // PrintLog(PRINT_POPUP, "Show Extension Overlay: %d", overlay); break;
     }
     return false;
 }

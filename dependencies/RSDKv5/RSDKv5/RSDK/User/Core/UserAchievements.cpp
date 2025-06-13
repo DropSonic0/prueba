@@ -37,19 +37,19 @@ using namespace RSDK;
 SKU::UserAchievements *RSDK::SKU::achievements = NULL;
 #endif
 
-void RSDK::SKU::ClearAchievements() { PrintLog(PRINT_NORMAL, "DUMMY ClearAchievements()"); }
+void RSDK::SKU::ClearAchievements() { /* PrintLog(PRINT_NORMAL, "DUMMY ClearAchievements()"); */ }
 
 #if !RETRO_REV02
 void RSDK::SKU::TryUnlockAchievement(AchievementID *id)
 {
-    PrintLog(PRINT_NORMAL, "DUMMY TryUnlockAchievement(%s)", id->identifier);
+    // PrintLog(PRINT_NORMAL, "DUMMY TryUnlockAchievement(%s)", id->identifier);
 
     int32 i = 0;
     for (; i < (int32)achievementList.size(); ++i) {
         if (achievementList[i].identifier == id->identifier) {
             if (!achievementList[i].achieved) {
                 achievementStack.push_back(i);
-                PrintLog(PRINT_NORMAL, "Unlocked Achievement: (%s, %d)", id->identifier, i);
+                // PrintLog(PRINT_NORMAL, "Unlocked Achievement: (%s, %d)", id->identifier, i);
                 achievementList[i].achieved = true;
                 SaveUserData();
             }
@@ -58,7 +58,7 @@ void RSDK::SKU::TryUnlockAchievement(AchievementID *id)
     }
 
     if (i == achievementList.size())
-        PrintLog(PRINT_NORMAL, "Failed to Unlock Achievement: (%s)", id->identifier);
+        // PrintLog(PRINT_NORMAL, "Failed to Unlock Achievement: (%s)", id->identifier);
 }
 #endif
 

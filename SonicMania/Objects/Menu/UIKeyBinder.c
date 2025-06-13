@@ -92,7 +92,7 @@ void UIKeyBinder_Update(void)
 
             if (self->state == UIKeyBinder_State_Selected) {
 #if GAME_VERSION != VER_100
-                LogHelpers_Print("bind = %d 0x%02x", keyMap, keyMap);
+                // LogHelpers_Print("bind = %d 0x%02x", keyMap, keyMap);
                 UIKeyBinder->isSelected   = false;
 #endif
 
@@ -111,7 +111,7 @@ void UIKeyBinder_Update(void)
         }
         else {
 #if GAME_VERSION != VER_100
-            LogHelpers_Print("bind = %d 0x%02x", keyMap, keyMap);
+            // LogHelpers_Print("bind = %d 0x%02x", keyMap, keyMap);
 #endif
 
             int32 frame = UIButtonPrompt_MappingsToFrame(self->lasyKeyMap);

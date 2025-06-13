@@ -88,7 +88,7 @@ void BuckwildBall_HandleTimerSfx(void)
     RSDK_THIS(BuckwildBall);
 
     if (self->timerSfx > 0) {
-        LogHelpers_Print("timerSfx = %d", self->timerSfx);
+        // LogHelpers_Print("timerSfx = %d", self->timerSfx);
     }
     else {
         RSDK.PlaySfx(BuckwildBall->sfxImpact, false, 255);

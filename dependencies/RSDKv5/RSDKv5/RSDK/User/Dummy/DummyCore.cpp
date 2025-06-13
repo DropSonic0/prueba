@@ -115,11 +115,11 @@ void DummyCore::LaunchManual()
 #if (SDL_COMPILEDVERSION >= SDL_VERSIONNUM(2, 0, 14))
     SDL_OpenURL("http://www.sonicthehedgehog.com/mania/manual");
 #else
-    PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
+    // PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
 #endif
 
 #else
-    PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
+    // PrintLog(PRINT_NORMAL, "EMPTY LaunchManual()");
 #endif
 }
 void DummyCore::ExitGame() { RenderDevice::isRunning = false; }

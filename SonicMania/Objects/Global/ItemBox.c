@@ -30,7 +30,7 @@ void ItemBox_Update(void)
                             self->contentsAnimator.frameID = 0;
                         if (++id > 5) {
                             RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
-                            LogHelpers_PrintText("Bad Change Item State");
+                            // LogHelpers_PrintText("Bad Change Item State");
                         }
                     }
                 }

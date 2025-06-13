@@ -430,7 +430,7 @@ void RSDK::ImagePNG::Unfilter(uint8 *recon)
         switch (filter) {
             default:
 #if !RETRO_USE_ORIGINAL_CODE
-                PrintLog(PRINT_NORMAL, "Invalid PNG Filter: %d", filter);
+                // PrintLog(PRINT_NORMAL, "Invalid PNG Filter: %d", filter);
                 return;
 #else
                 // [Fallthrough]
@@ -1003,7 +1003,7 @@ bool32 RSDK::LoadImage(const char *filename, double displayLength, double fadeSp
         }
 #if !RETRO_USE_ORIGINAL_CODE
         else {
-            PrintLog(PRINT_NORMAL, "ERROR: Images must be 1024x512!");
+            // PrintLog(PRINT_NORMAL, "ERROR: Images must be 1024x512!");
         }
 #endif
 
@@ -1028,7 +1028,7 @@ bool32 RSDK::LoadImage(const char *filename, double displayLength, double fadeSp
         }
 #if !RETRO_USE_ORIGINAL_CODE
         else {
-            PrintLog(PRINT_NORMAL, "ERROR: Images must be 1024x512!");
+            // PrintLog(PRINT_NORMAL, "ERROR: Images must be 1024x512!");
         }
 #endif
 

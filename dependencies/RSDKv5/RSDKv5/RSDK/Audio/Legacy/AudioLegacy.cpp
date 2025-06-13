@@ -106,7 +106,7 @@ void RSDK::Legacy::v4::SetSfxName(const char *sfxName, int32 sfxID)
     }
     sfxNames[sfxID][soundNameID] = 0;
 
-    PrintLog(PRINT_NORMAL, "Set SFX (%d) name to: %s", sfxID, sfxName);
+    // PrintLog(PRINT_NORMAL, "Set SFX (%d) name to: %s", sfxID, sfxName);
 }
 
 void RSDK::Legacy::v4::SetSfxAttributes(int32 sfxID, int32 loop, int8 pan)
@@ -141,6 +141,6 @@ void RSDK::Legacy::v3::SetSfxName(const char *sfxName, int32 sfxID, bool32 globa
         ++sfxNamePos;
     }
     sfxNamePtr[sfxPtrPos] = 0;
-    PrintLog(PRINT_NORMAL, "Set %s SFX (%d) name to: %s", (global ? "Global" : "Stage"), sfxID, sfxNamePtr);
+    // PrintLog(PRINT_NORMAL, "Set %s SFX (%d) name to: %s", (global ? "Global" : "Stage"), sfxID, sfxNamePtr);
 }
 #endif

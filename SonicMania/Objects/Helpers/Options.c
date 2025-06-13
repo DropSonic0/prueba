@@ -56,16 +56,16 @@ void Options_Reload(void)
 
     Options_GetWinSize();
 
-    LogHelpers_Print("optionsPtr->screenShader = %d", options->screenShader);
-    LogHelpers_Print("optionsPtr->volMusic = %d", options->volMusic);
-    LogHelpers_Print("optionsPtr->volSfx = %d", options->volSfx);
-    LogHelpers_Print("optionsPtr->language = %d", options->language);
-    LogHelpers_Print("optionsPtr->overrideLanguage = %d", options->overrideLanguage);
-    LogHelpers_Print("optionsPtr->vsync = %d", options->vSync);
-    LogHelpers_Print("optionsPtr->tripleBuffering = %d", options->tripleBuffering);
-    LogHelpers_Print("optionsPtr->windowBorder = %d", options->windowBorder);
-    LogHelpers_Print("optionsPtr->windowed = %d", options->windowed);
-    LogHelpers_Print("optionsPtr->windowSize = %d", options->windowSize);
+    // LogHelpers_Print("optionsPtr->screenShader = %d", options->screenShader);
+    // LogHelpers_Print("optionsPtr->volMusic = %d", options->volMusic);
+    // LogHelpers_Print("optionsPtr->volSfx = %d", options->volSfx);
+    // LogHelpers_Print("optionsPtr->language = %d", options->language);
+    // LogHelpers_Print("optionsPtr->overrideLanguage = %d", options->overrideLanguage);
+    // LogHelpers_Print("optionsPtr->vsync = %d", options->vSync);
+    // LogHelpers_Print("optionsPtr->tripleBuffering = %d", options->tripleBuffering);
+    // LogHelpers_Print("optionsPtr->windowBorder = %d", options->windowBorder);
+    // LogHelpers_Print("optionsPtr->windowed = %d", options->windowed);
+    // LogHelpers_Print("optionsPtr->windowSize = %d", options->windowSize);
 }
 
 void Options_GetWinSize(void)
@@ -220,8 +220,8 @@ void Options_LoadOptionsCallback(int32 status)
         success                = true;
         globals->optionsLoaded = STATUS_OK;
 
-        LogHelpers_Print("dataPtr.language = %d", options->language);
-        LogHelpers_Print("dataPtr.overrideLanguage = %d", options->overrideLanguage);
+        // LogHelpers_Print("dataPtr.language = %d", options->language);
+        // LogHelpers_Print("dataPtr.overrideLanguage = %d", options->overrideLanguage);
         Options_LoadValuesFromSettings(Options_GetOptionsRAM());
 
         RSDK.SetVideoSetting(VIDEOSETTING_SHADERID, options->screenShader);

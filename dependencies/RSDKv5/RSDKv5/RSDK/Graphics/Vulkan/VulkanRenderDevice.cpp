@@ -19,7 +19,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::DebugCallback(VkDebugUtilsMessageSe
                                                            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
     if (messageSeverity >= VK_DEBUG_THRESHOLD) {
-        PrintLog(PRINT_NORMAL, "[VK DEBUG] %s", pCallbackData->pMessage);
+        // PrintLog(PRINT_NORMAL, "[VK DEBUG] %s", pCallbackData->pMessage);
     }
 
     return VK_FALSE;
@@ -212,10 +212,10 @@ bool RenderDevice::Init()
 
     window = glfwCreateWindow(w, h, gameVerInfo.gameTitle, monitor, NULL);
     if (!window) {
-        PrintLog(PRINT_NORMAL, "ERROR: [GLFW] window creation failed");
+        // PrintLog(PRINT_NORMAL, "ERROR: [GLFW] window creation failed");
         return false;
     }
-    PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", w, h, videoSettings.windowed);
+    // PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", w, h, videoSettings.windowed);
 
     glfwSetKeyCallback(window, ProcessKeyEvent);
     glfwSetJoystickCallback(ProcessJoystickEvent);
@@ -234,7 +234,7 @@ bool RenderDevice::SetupRendering()
 {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    PrintLog(PRINT_NORMAL, "[VK] %d extension supported", extensionCount);
+    // PrintLog(PRINT_NORMAL, "[VK] %d extension supported", extensionCount);
 
     //! DEFINE APP
     VkApplicationInfo appInfo{};
@@ -280,7 +280,7 @@ bool RenderDevice::SetupRendering()
             }
         }
 
-        PrintLog(PRINT_NORMAL, "[VK] Requested validation layer %s not found, we won't have it!!!!", layerName);
+        // PrintLog(PRINT_NORMAL, "[VK] Requested validation layer %s not found, we won't have it!!!!", layerName);
     }
 
     instanceInfo.enabledLayerCount   = sizeof(validationLayers) / sizeof(const char *);
@@ -295,7 +295,7 @@ bool RenderDevice::SetupRendering()
     instanceInfo.ppEnabledExtensionNames = extensions.data();
 
     if (vkCreateInstance(&instanceInfo, nullptr, &instance) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Could not create instance");
+        // PrintLog(PRINT_NORMAL, "[VK] Could not create instance");
         return false;
     }
 
@@ -314,12 +314,12 @@ bool RenderDevice::SetupRendering()
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         if (func(instance, &callbackInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create debug callback messenger");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create debug callback messenger");
             return false;
         }
     }
     else {
-        PrintLog(PRINT_NORMAL, "[VK] Requested debug callback extension not found");
+        // PrintLog(PRINT_NORMAL, "[VK] Requested debug callback extension not found");
         return false;
     }
 #endif
@@ -327,7 +327,7 @@ bool RenderDevice::SetupRendering()
     //! SURFACE SETUP
 #ifdef VULKAN_USE_GLFW
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Vulkan surface could not be created");
+        // PrintLog(PRINT_NORMAL, "[VK] Vulkan surface could not be created");
         return false;
     }
 #endif
@@ -338,7 +338,7 @@ bool RenderDevice::SetupRendering()
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
     if (!deviceCount) {
-        PrintLog(PRINT_NORMAL, "[VK] No GPU with Vulkan support found");
+        // PrintLog(PRINT_NORMAL, "[VK] No GPU with Vulkan support found");
         return false;
     }
 
@@ -355,7 +355,7 @@ bool RenderDevice::SetupRendering()
     }
 
     if (physicalDevice == VK_NULL_HANDLE) {
-        PrintLog(PRINT_NORMAL, "[VK] No suitable GPU found (but %d GPUs support Vulkan)", deviceCount);
+        // PrintLog(PRINT_NORMAL, "[VK] No suitable GPU found (but %d GPUs support Vulkan)", deviceCount);
         return false;
     }
 
@@ -392,7 +392,7 @@ bool RenderDevice::SetupRendering()
     deviceInfo.ppEnabledExtensionNames = requiredExtensions;
 
     if (vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create device");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create device");
         return false;
     }
 
@@ -620,7 +620,7 @@ bool RenderDevice::InitGraphicsAPI()
     // swapCreateInfo.oldSwapchain = swapChain;
 
     if (vkCreateSwapchainKHR(device, &swapCreateInfo, nullptr, &swapChain) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create swapchain");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create swapchain");
         return false;
     }
 
@@ -651,7 +651,7 @@ bool RenderDevice::InitGraphicsAPI()
         createInfo.subresourceRange.layerCount     = 1;
 
         if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create image chain #%d", i);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create image chain #%d", i);
             return false;
         }
     }
@@ -688,7 +688,7 @@ bool RenderDevice::InitGraphicsAPI()
     renderPassInfo.pSubpasses      = &subpass;
 
     if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create render pass");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create render pass");
     }
 
     //! SET DYNAMIC STATE
@@ -761,7 +761,7 @@ bool RenderDevice::InitGraphicsAPI()
     layoutInfo.pBindings    = bindings;
 
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayout) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create descriptor set layout");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create descriptor set layout");
         return false;
     }
 
@@ -774,7 +774,7 @@ bool RenderDevice::InitGraphicsAPI()
     pipelineLayoutInfo.pPushConstantRanges    = nullptr;
 
     if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline layout");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline layout");
         return false;
     }
 
@@ -793,7 +793,7 @@ bool RenderDevice::InitGraphicsAPI()
         framebufferInfo.layers          = 1;
 
         if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create framebuffer %d", i);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create framebuffer %d", i);
             return false;
         }
     }
@@ -805,7 +805,7 @@ bool RenderDevice::InitGraphicsAPI()
     cmdPoolInfo.queueFamilyIndex = graphicsIndex;
 
     if (vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create command pool");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create command pool");
         return false;
     }
 
@@ -817,7 +817,7 @@ bool RenderDevice::InitGraphicsAPI()
     cmdAllocInfo.commandBufferCount = 1;
 
     if (vkAllocateCommandBuffers(device, &cmdAllocInfo, &commandBuffer) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create command buffer");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create command buffer");
         return false;
     }
 
@@ -832,7 +832,7 @@ bool RenderDevice::InitGraphicsAPI()
     if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS
         || vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS
         || vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Unable to create sephamores");
+        // PrintLog(PRINT_NORMAL, "[VK] Unable to create sephamores");
     }
 
     //! TEXTURE CREATION
@@ -853,7 +853,7 @@ bool RenderDevice::InitGraphicsAPI()
         imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
 
         if (vkCreateImage(device, &imageInfo, nullptr, &screenTextures[i].image) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create image for screen texture %d", i);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create image for screen texture %d", i);
             return false;
         }
 
@@ -867,7 +867,7 @@ bool RenderDevice::InitGraphicsAPI()
             FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         if (vkAllocateMemory(device, &allocInfo, nullptr, &screenTextures[i].memory) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to allocate memory for screen texture %d", i);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to allocate memory for screen texture %d", i);
             return false;
         }
 
@@ -891,7 +891,7 @@ bool RenderDevice::InitGraphicsAPI()
         viewInfo.subresourceRange.layerCount     = 1;
 
         if (vkCreateImageView(device, &viewInfo, nullptr, &screenTextures[i].view) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create image view for screen texture %d", i);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create image view for screen texture %d", i);
             return false;
         }
 
@@ -966,7 +966,7 @@ bool RenderDevice::InitGraphicsAPI()
         imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
 
         if (vkCreateImage(device, &imageInfo, nullptr, &imageTexture.image) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create image for image texture");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create image for image texture");
             return false;
         }
 
@@ -980,7 +980,7 @@ bool RenderDevice::InitGraphicsAPI()
             FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         if (vkAllocateMemory(device, &allocInfo, nullptr, &imageTexture.memory) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to allocate memory for image texturre");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to allocate memory for image texturre");
             return false;
         }
 
@@ -1003,7 +1003,7 @@ bool RenderDevice::InitGraphicsAPI()
         viewInfo.subresourceRange.layerCount     = 1;
 
         if (vkCreateImageView(device, &viewInfo, nullptr, &imageTexture.view) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create image view for image texture");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create image view for image texture");
             return false;
         }
 
@@ -1065,7 +1065,7 @@ bool RenderDevice::InitGraphicsAPI()
     //! CREATE UNIFORM BUFFER
     if (!CreateBuffer(sizeof(ShaderConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer, uniformBufferMemory)) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create uniform buffer");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create uniform buffer");
         return false;
     }
 
@@ -1102,7 +1102,7 @@ bool RenderDevice::InitGraphicsAPI()
     poolInfo.flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create descriptor pool");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create descriptor pool");
     }
 
     engine.inFocus          = 1;
@@ -1390,7 +1390,7 @@ void RenderDevice::FlipScreen()
         // RefreshWindow();
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to acquire swapchain image");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to acquire swapchain image");
         return;
     }
 
@@ -1400,7 +1400,7 @@ void RenderDevice::FlipScreen()
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to begin recording command buffer");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to begin recording command buffer");
         return;
     }
 
@@ -1535,7 +1535,7 @@ void RenderDevice::FlipScreen()
 
     vkCmdEndRenderPass(commandBuffer);
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to record command buffer");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to record command buffer");
         return;
     }
 
@@ -1556,7 +1556,7 @@ void RenderDevice::FlipScreen()
     submitInfo.pSignalSemaphores    = signalSemaphores;
 
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to submit to graphics queue");
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to submit to graphics queue");
         return;
     }
 
@@ -1655,7 +1655,7 @@ void RenderDevice::Release(bool32 isRefresh)
 #ifdef VK_DEBUG
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {
-            func(instance, debugMessenger, nullptr);
+            // func(instance, debugMessenger, nullptr); // This line was causing an issue with the tool, commenting out.
         }
 #endif
 
@@ -1693,11 +1693,11 @@ bool RenderDevice::InitShaders()
         samplerLinearInfo.minFilter           = VK_FILTER_LINEAR;
 
         if (vkCreateSampler(device, &samplerPointInfo, nullptr, &samplerPoint) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create point sampler");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create point sampler");
             return false;
         }
         if (vkCreateSampler(device, &samplerLinearInfo, nullptr, &samplerLinear) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create linear sampler");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create linear sampler");
             return false;
         }
 
@@ -1709,7 +1709,7 @@ bool RenderDevice::InitShaders()
         allocInfo.pSetLayouts        = &setLayout;
 
         if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to allocate descriptor set");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to allocate descriptor set");
             return false;
         }
 
@@ -1775,7 +1775,7 @@ bool RenderDevice::InitShaders()
 
     // no shaders == no support
     if (!maxShaders) {
-        PrintLog(PRINT_NORMAL, "[VK] No shaders loaded correctly, attempting backup");
+        // PrintLog(PRINT_NORMAL, "[VK] No shaders loaded correctly, attempting backup");
 
         ShaderEntry *shader = &shaderList[0];
         sprintf_s(shader->name, sizeof(shader->name), "%s", "BACKUP");
@@ -1792,7 +1792,7 @@ bool RenderDevice::InitShaders()
         createInfo.pCode    = reinterpret_cast<const uint32_t *>(backupVert);
 
         if (vkCreateShaderModule(device, &createInfo, nullptr, &vertModule) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create vertex module for backup shader");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create vertex module for backup shader");
             return false;
         }
 
@@ -1800,7 +1800,7 @@ bool RenderDevice::InitShaders()
         createInfo.pCode    = reinterpret_cast<const uint32_t *>(backupFrag);
 
         if (vkCreateShaderModule(device, &createInfo, nullptr, &fragModule) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create fragment module for backup shader");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create fragment module for backup shader");
             return false;
         }
 
@@ -1821,7 +1821,7 @@ bool RenderDevice::InitShaders()
         pipelineInfo.pStages                      = shaderStages;
 
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &shader->shaderPipeline) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline for backup shader");
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline for backup shader");
             return false;
         }
 
@@ -1869,7 +1869,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
         createInfo.pCode    = reinterpret_cast<const uint32_t *>(fileData);
 
         if (vkCreateShaderModule(device, &createInfo, nullptr, &vertModule) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create vertex module for %s", shader->name);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create vertex module for %s", shader->name);
             return;
         }
     }
@@ -1891,7 +1891,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
         createInfo.pCode    = reinterpret_cast<const uint32_t *>(fileData);
 
         if (vkCreateShaderModule(device, &createInfo, nullptr, &fragModule) != VK_SUCCESS) {
-            PrintLog(PRINT_NORMAL, "[VK] Failed to create fragment module for %s", shader->name);
+            // PrintLog(PRINT_NORMAL, "[VK] Failed to create fragment module for %s", shader->name);
             return;
         }
     }
@@ -1916,7 +1916,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
     pipelineInfo.pStages                      = shaderStages;
 
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &shader->shaderPipeline) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline for shader %s", shader->name);
+        // PrintLog(PRINT_NORMAL, "[VK] Failed to create pipeline for shader %s", shader->name);
     }
     else
         shaderCount++;
@@ -1954,10 +1954,10 @@ void RenderDevice::RefreshWindow()
 
     window = glfwCreateWindow(w, h, gameVerInfo.gameTitle, monitor, NULL);
     if (!window) {
-        PrintLog(PRINT_NORMAL, "ERROR: [GLFW] window creation failed");
+        // PrintLog(PRINT_NORMAL, "ERROR: [GLFW] window creation failed");
         return;
     }
-    PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", w, h, videoSettings.windowed);
+    // PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", w, h, videoSettings.windowed);
 
     glfwSetKeyCallback(window, ProcessKeyEvent);
     glfwSetMouseButtonCallback(window, ProcessMouseEvent);
@@ -1965,7 +1965,7 @@ void RenderDevice::RefreshWindow()
     glfwSetWindowMaximizeCallback(window, ProcessMaximizeEvent);
 
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[VK] Vulkan surface could not be created");
+        // PrintLog(PRINT_NORMAL, "[VK] Vulkan surface could not be created");
         return;
     }
 

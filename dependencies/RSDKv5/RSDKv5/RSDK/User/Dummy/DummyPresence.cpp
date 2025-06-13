@@ -12,6 +12,6 @@ void DummyRichPresence::SetPresence(int32 id, String *message)
     str += ": SetPresence() # Set Steam rich presence string to ";
     str += buffer;
     str += "\r\n";
-    PrintLog(PRINT_NORMAL, str.c_str());
+    // PrintLog(PRINT_NORMAL, str.c_str());
 }
 #endif

@@ -109,13 +109,13 @@ void UIDialog_StageLoad(void)
 EntityUIDialog *UIDialog_CreateActiveDialog(String *msg)
 {
     if (UIDialog->activeDialog) {
-        LogHelpers_Print("EXCEPTION: Called CreateDialog when an activeDialog already existed.");
+        // LogHelpers_Print("EXCEPTION: Called CreateDialog when an activeDialog already existed.");
     }
     else {
         int32 id = RSDK_GET_ENTITY(SLOT_DIALOG, UIDialog)->classID;
 
         if (id) {
-            LogHelpers_Print("Can't create UIDialog (%d), entity already exists in slot (class ID: %d)", UIDialog->classID, id);
+            // LogHelpers_Print("Can't create UIDialog (%d), entity already exists in slot (class ID: %d)", UIDialog->classID, id);
         }
         else {
             RSDK.ResetEntitySlot(SLOT_DIALOG, UIDialog->classID, msg);

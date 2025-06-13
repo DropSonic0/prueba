@@ -461,7 +461,7 @@ void UILeaderboard_ProcessButtonCB(void)
         newID = avail.start;
 
     if (avail.length && self->entryOffset != newID) {
-        LogHelpers_Print("old: %d, new: %d", self->entryOffset, newID);
+        // LogHelpers_Print("old: %d, new: %d", self->entryOffset, newID);
         self->entryOffset = newID;
 
         UILeaderboard_LoadEntries(self);
@@ -469,12 +469,12 @@ void UILeaderboard_ProcessButtonCB(void)
 
         if (avail.start <= 1 || newID >= avail.start + 2) {
             if (newID > (avail.start + avail.length - 7)) {
-                LogHelpers_Print("Load down");
+                // LogHelpers_Print("Load down");
                 API.LoadLeaderboardEntries(avail.start, avail.length + 20, LEADERBOARD_LOAD_NEXT);
             }
         }
         else {
-            LogHelpers_Print("Load up");
+            // LogHelpers_Print("Load up");
             API.LoadLeaderboardEntries(avail.start - 20, avail.length + 20, LEADERBOARD_LOAD_PREV);
         }
     }

@@ -261,7 +261,7 @@ void TimeAttackMenu_HandleMenuReturn(void)
 
 void TimeAttackMenu_SetEncoreLayouts(bool32 enabled)
 {
-    LogHelpers_Print("SetEncoreLayouts(%d)", enabled);
+    // LogHelpers_Print("SetEncoreLayouts(%d)", enabled);
     TimeAttackMenu->encoreMode = enabled;
 
     EntityUIButtonPrompt *prompt = TimeAttackMenu->switchModePrompt;
@@ -392,13 +392,13 @@ void TimeAttackMenu_WatchReplay(int32 row, bool32 showGhost)
 {
     EntityMenuParam *param = MenuParam_GetParam();
 
-    int32 id = API_GetFilteredInputDeviceID(false, false, 0);
+    int32 id = API.GetFilteredInputDeviceID(false, false, 0);
     API_ResetInputSlotAssignments();
     API_AssignInputSlotToDevice(CONT_P1, id);
 
     uint32 uuid = API.GetUserDBRowUUID(globals->replayTableID, row);
-    LogHelpers_Print("Go_Replay(%d, %d)", row, showGhost);
-    LogHelpers_Print("uuid: %08X", uuid);
+    // LogHelpers_Print("Go_Replay(%d, %d)", row, showGhost);
+    // LogHelpers_Print("uuid: %08X", uuid);
 
     int32 score       = 0;
     uint8 zoneID      = 0;
@@ -459,7 +459,7 @@ void TimeAttackMenu_ReplayLoad_CB(bool32 success)
         Replay *replayPtr = (Replay *)globals->replayTempRBuffer;
 
         if (replayPtr->header.version == GAME_VERSION) {
-            LogHelpers_Print("WARNING: Replay Load OK");
+            // LogHelpers_Print("WARNING: Replay Load OK");
             ReplayRecorder_Buffer_Unpack(globals->replayReadBuffer, globals->replayTempRBuffer);
             TimeAttackMenu_LoadScene_Fadeout();
             return;
@@ -976,7 +976,7 @@ void TimeAttackMenu_SetupLeaderboardsCarousel(EntityUICarousel *carousel)
             max += parent->buttonCount;
 
         int32 vIndex = max + carousel->scrollOffset;
-        LogHelpers_Print("i = %d, vIndex = %d", i, vIndex);
+        // LogHelpers_Print("i = %d, vIndex = %d", i, vIndex);
 
         if (vIndex == carousel->virtualIndex) {
             parent->buttonID = i;
@@ -984,11 +984,11 @@ void TimeAttackMenu_SetupLeaderboardsCarousel(EntityUICarousel *carousel)
         }
     }
 
-    LogHelpers_Print("avail.start = %d, length = %d", avail.start, avail.length);
-    LogHelpers_Print("scrollOffset = %d", carousel->scrollOffset);
-    LogHelpers_Print("virtualIndex = %d", carousel->virtualIndex);
-    LogHelpers_Print("minOffset = %d", carousel->minOffset);
-    LogHelpers_Print("maxOffset = %d", carousel->maxOffset);
+    // LogHelpers_Print("avail.start = %d, length = %d", avail.start, avail.length);
+    // LogHelpers_Print("scrollOffset = %d", carousel->scrollOffset);
+    // LogHelpers_Print("virtualIndex = %d", carousel->virtualIndex);
+    // LogHelpers_Print("minOffset = %d", carousel->minOffset);
+    // LogHelpers_Print("maxOffset = %d", carousel->maxOffset);
 
     carousel->buttonID = -1;
 }

@@ -103,7 +103,7 @@ bool RenderDevice::Init()
     windowHandle = CreateWindowEx(WS_EX_LEFT, gameTitle, gameTitle, windowFlags, winRect.left, winRect.top, winRect.right - winRect.left,
                                   winRect.bottom - winRect.top, NULL, NULL, hInstance, NULL);
 
-    PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", winRect.right - winRect.left, winRect.bottom - winRect.top, videoSettings.windowed);
+    // PrintLog(PRINT_NORMAL, "w: %d h: %d windowed: %d", winRect.right - winRect.left, winRect.bottom - winRect.top, videoSettings.windowed);
 
     if (!windowHandle)
         return false;
@@ -744,7 +744,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
 
         if (FAILED(result)) {
             if (errorBlob) {
-                PrintLog(PRINT_NORMAL, "ERROR COMPILING VERTEX SHADER: %s", (char *)errorBlob->GetBufferPointer());
+                // PrintLog(PRINT_NORMAL, "ERROR COMPILING VERTEX SHADER: %s", (char *)errorBlob->GetBufferPointer());
                 errorBlob->Release();
             }
 
@@ -754,9 +754,9 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
             return;
         }
         else {
-            PrintLog(PRINT_NORMAL, "Successfully compiled vertex shader!");
+            // PrintLog(PRINT_NORMAL, "Successfully compiled vertex shader!");
             if (errorBlob)
-                PrintLog(PRINT_NORMAL, "Vertex shader warnings:\n%s", (char *)errorBlob->GetBufferPointer());
+                // PrintLog(PRINT_NORMAL, "Vertex shader warnings:\n%s", (char *)errorBlob->GetBufferPointer());
 
             if (FAILED(dx9Device->CreateVertexShader((DWORD *)shaderBlob->GetBufferPointer(), &shader->vertexShaderObject))) {
                 if (shader->vertexShaderObject) {
@@ -824,7 +824,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
 
         if (FAILED(result)) {
             if (errorBlob) {
-                PrintLog(PRINT_NORMAL, "ERROR COMPILING PIXEL SHADER:\n%s", (char *)errorBlob->GetBufferPointer());
+                // PrintLog(PRINT_NORMAL, "ERROR COMPILING PIXEL SHADER:\n%s", (char *)errorBlob->GetBufferPointer());
                 errorBlob->Release();
             }
 
@@ -832,9 +832,9 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
                 shaderBlob->Release();
         }
         else {
-            PrintLog(PRINT_NORMAL, "Successfully compiled pixel shader!");
+            // PrintLog(PRINT_NORMAL, "Successfully compiled pixel shader!");
             if (errorBlob)
-                PrintLog(PRINT_NORMAL, "Pixel shader warnings:\n%s", (char *)errorBlob->GetBufferPointer());
+                // PrintLog(PRINT_NORMAL, "Pixel shader warnings:\n%s", (char *)errorBlob->GetBufferPointer());
 
             if (FAILED(dx9Device->CreatePixelShader((DWORD *)shaderBlob->GetBufferPointer(), &shader->pixelShaderObject))) {
                 if (shader->vertexShaderObject) {

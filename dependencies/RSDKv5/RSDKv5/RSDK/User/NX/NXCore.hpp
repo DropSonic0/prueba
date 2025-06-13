@@ -7,7 +7,7 @@ struct NXCore : UserCore {
     bool32 CheckEnginePause() { return false; }
     int32 GetUserLanguage()
     {
-        printf("desiredLanguage: %s\n", "en");
+        // printf("desiredLanguage: %s\n", "en");
         // get system language
         return LANGUAGE_EN;
     }

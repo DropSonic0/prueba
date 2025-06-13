@@ -38,8 +38,8 @@ void WarpDoor_Update(void)
                         }
                         int32 relPosX = playerX - self->position.x;
                         int32 relPosY = playerY - self->position.y;
-                        LogHelpers_Print("camRelPos = <%d, %d>", camRelPosX >> 16, camRelPosY >> 16);
-                        LogHelpers_Print("relPos = <%d, %d>", relPosX >> 16, relPosY >> 16);
+                        // LogHelpers_Print("camRelPos = <%d, %d>", camRelPosX >> 16, camRelPosY >> 16);
+                        // LogHelpers_Print("relPos = <%d, %d>", relPosX >> 16, relPosY >> 16);
 
                         Vector2 newPos;
                         newPos.x = tag->position.x;
@@ -61,8 +61,8 @@ void WarpDoor_Update(void)
                             Vector2 newCamPos;
                             newCamPos.x = camRelPosX + newPos.x;
                             newCamPos.y = camRelPosY + newPos.y;
-                            LogHelpers_Print("newPos = <%d, %d>", newPos.x >> 16, newPos.y >> 16);
-                            LogHelpers_Print("newCamPos = <%d, %d>", newCamPos.x >> 16, newCamPos.y >> 16);
+                            // LogHelpers_Print("newPos = <%d, %d>", newPos.x >> 16, newPos.y >> 16);
+                            // LogHelpers_Print("newCamPos = <%d, %d>", newCamPos.x >> 16, newCamPos.y >> 16);
 
                             camera->position.x                      = newCamPos.x;
                             camera->position.y                      = newCamPos.y;

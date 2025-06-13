@@ -62,7 +62,7 @@ void SaveGame_LoadSaveData(void)
         SaveGame->saveRAM = (SaveRAM *)SaveGame_GetDataPtr(slot);
 #endif
 
-    LogHelpers_Print("dataPtr: %X", SaveGame->saveRAM);
+    // LogHelpers_Print("dataPtr: %X", SaveGame->saveRAM);
 
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
     if (!saveRAM->lives)
@@ -115,7 +115,7 @@ void SaveGame_LoadSaveData(void)
             globals->restart1UP      = 100;
             globals->restartPowerups = 0;
 
-            LogHelpers_Print("RecallCollectedEntities");
+            // LogHelpers_Print("RecallCollectedEntities");
 
             for (int32 e = RESERVE_ENTITY_COUNT; e < RESERVE_ENTITY_COUNT + SCENEENTITY_COUNT; ++e) {
                 switch (globals->atlEntityData[(0x200 * 1) + e]) {
@@ -228,7 +228,7 @@ void SaveGame_SaveFile(void (*callback)(void))
 void SaveGame_SaveLoadedCB(bool32 success)
 {
 #if MANIA_USE_PLUS
-    LogHelpers_Print("SaveLoadedCB(%d)", success);
+    // LogHelpers_Print("SaveLoadedCB(%d)", success);
 #endif
 
     if (success) {

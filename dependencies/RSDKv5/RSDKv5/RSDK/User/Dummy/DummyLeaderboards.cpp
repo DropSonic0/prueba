@@ -110,10 +110,10 @@ void DummyLeaderboards::FetchLeaderboard(LeaderboardID *leaderboard, bool32 isUs
     if (status == STATUS_CONTINUE) {
         std::string str = __FILE__;
         str += ": FetchLeaderboard() # ERROR Attemped to fetch leaderboard when fetch currently in progress. \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
     }
     else {
-        PrintLog(PRINT_NORMAL, "DUMMY FetchLeaderboard(%s, %s)", leaderboard->idPC, isUser ? "true" : "false");
+        // PrintLog(PRINT_NORMAL, "DUMMY FetchLeaderboard(%s, %s)", leaderboard->idPC, isUser ? "true" : "false");
 
         this->currentLeaderboard = leaderboard;
         this->loadList.Clear();
@@ -158,7 +158,7 @@ void DummyLeaderboards::TrackScore(LeaderboardID *leaderboard, int32 score, void
     str += ": TrackScore() # TrackScore ";
     str += std::to_string(score);
     str += " \r\n";
-    PrintLog(PRINT_NORMAL, str.c_str());
+    // PrintLog(PRINT_NORMAL, str.c_str());
 #endif
 
     DummyLeaderboardCallback *cb = callbackList.Append();

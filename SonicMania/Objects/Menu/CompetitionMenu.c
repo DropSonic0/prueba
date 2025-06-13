@@ -735,14 +735,14 @@ void CompetitionMenu_Round_MenuSetupCB(void)
             }
         }
 
-        LogHelpers_Print("Announce_CharWins(%d)", session->playerID[winner]);
+        // LogHelpers_Print("Announce_CharWins(%d)", session->playerID[winner]);
 
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceWinPlayer;
         announcer->playerID        = session->playerID[winner];
     }
     else {
-        LogHelpers_Print("Announce_ItsADraw(%d)", 0);
+        // LogHelpers_Print("Announce_ItsADraw(%d)", 0);
 
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceDraw;
@@ -816,7 +816,7 @@ void CompetitionMenu_Results_MenuSetupCB(void)
     }
 
     if (winnerCount >= 2) {
-        LogHelpers_Print("Announce_ItsADraw(%d)", 1);
+        // LogHelpers_Print("Announce_ItsADraw(%d)", 1);
 
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceDraw;
@@ -824,7 +824,7 @@ void CompetitionMenu_Results_MenuSetupCB(void)
         announcer->timer           = 0;
     }
     else {
-        LogHelpers_Print("Announce_WinnerIs(%d)", winnerID);
+        // LogHelpers_Print("Announce_WinnerIs(%d)", winnerID);
 
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceWinner;

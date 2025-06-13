@@ -885,7 +885,7 @@ void RSDK::Legacy::v3::CheckAliasText(char *text)
 
 #if !RETRO_USE_ORIGINAL_CODE
     if (aliasCount >= LEGACY_v3_ALIAS_COUNT) {
-        RSDK::PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Too many aliases\nFILE: %s", scriptFile);
+        // RSDK::PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Too many aliases\nFILE: %s", scriptFile);
         gameMode = ENGINE_SCRIPTERROR;
         return;
     }
@@ -1074,7 +1074,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
     }
 
     if (opcode <= 0) {
-        RSDK::PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Opcode not found\nOPCODE: %s\nLINE: %d\nFILE: %s", funcName, lineID, scriptFile);
+        // RSDK::PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Opcode not found\nOPCODE: %s\nLINE: %d\nFILE: %s", funcName, lineID, scriptFile);
 
         gameMode = ENGINE_SCRIPTERROR;
     }
@@ -1201,7 +1201,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
                     }
 
                     if (s == stageSFXCount)
-                        PrintLog(PRINT_NORMAL, "WARNING: Unknown SfxName \"%s\"", arrayStr);
+                        // PrintLog(PRINT_NORMAL, "WARNING: Unknown SfxName \"%s\"", arrayStr);
                 }
             }
 
@@ -1231,7 +1231,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
                 }
 
                 if (a == (int32)achievementList.size())
-                    PrintLog(PRINT_NORMAL, "WARNING: Unknown AchievementName \"%s\"", arrayStr);
+                    // PrintLog(PRINT_NORMAL, "WARNING: Unknown AchievementName \"%s\"", arrayStr);
             }
 
             // Eg: TempValue0 = PlayerName[SONIC]
@@ -1260,7 +1260,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
                 }
 
                 if (p == LEGACY_PLAYERNAME_COUNT)
-                    PrintLog(PRINT_NORMAL, "WARNING: Unknown PlayerName \"%s\", on line %d", arrayStr, lineID);
+                    // PrintLog(PRINT_NORMAL, "WARNING: Unknown PlayerName \"%s\", on line %d", arrayStr, lineID);
             }
 
             // Eg: TempValue0 = StageName[R - PALMTREE PANIC ZONE 1 A]
@@ -1313,7 +1313,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
                 }
 
                 if (s == -1) {
-                    PrintLog(PRINT_NORMAL, "WARNING: Unknown StageName \"%s\", on line %d", arrayStr, lineID);
+                    // PrintLog(PRINT_NORMAL, "WARNING: Unknown StageName \"%s\", on line %d", arrayStr, lineID);
                     s = 0;
                 }
 
@@ -1412,7 +1412,7 @@ void RSDK::Legacy::v3::ConvertFunctionText(char *text)
                 }
 
                 if (constant == -1 && gameMode != ENGINE_SCRIPTERROR) {
-                    PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Operand not found\nOPERAND: %s\nLINE: %d\nFILE: %s", funcName, lineID, scriptFile);
+                    // PrintLog(PRINT_SCRIPTERR, "SCRIPT ERROR: Operand not found\nOPERAND: %s\nLINE: %d\nFILE: %s", funcName, lineID, scriptFile);
 
                     gameMode = ENGINE_SCRIPTERROR;
                     constant = 0;
@@ -1457,7 +1457,7 @@ void RSDK::Legacy::v3::CheckCaseNumber(char *text)
             jumpTable[stackValue] = caseID;
     }
     else {
-        PrintLog(PRINT_NORMAL, "WARNING: unable to convert case string \"%s\" to int32, on line %d", caseString, lineID);
+        // PrintLog(PRINT_NORMAL, "WARNING: unable to convert case string \"%s\" to int32, on line %d", caseString, lineID);
     }
 }
 bool32 RSDK::Legacy::v3::ReadSwitchCase(char *text)

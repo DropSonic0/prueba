@@ -51,7 +51,7 @@ void GetLeaderboardName(char *buffer, int32 zoneID, int32 actID, int32 character
 
 void RSDK::SKU::TrackActClear(uint8 zoneID, uint8 actID, uint8 characterID, int32 time, int32 rings, int32 score)
 {
-    PrintLog(PRINT_NORMAL, "DUMMY TrackActClear(%d, %d, %d, %d, %d, %d)", zoneID, actID, characterID, time, rings, score);
+    // PrintLog(PRINT_NORMAL, "DUMMY TrackActClear(%d, %d, %d, %d, %d, %d)", zoneID, actID, characterID, time, rings, score);
 }
 void RSDK::SKU::TrackTAClear(uint8 zoneID, uint8 actID, uint8 characterID, int32 score)
 {
@@ -60,11 +60,11 @@ void RSDK::SKU::TrackTAClear(uint8 zoneID, uint8 actID, uint8 characterID, int32
 
     GetLeaderboardName(leaderboardName, zoneID, actID, characterID);
 
-    PrintLog(PRINT_NORMAL, "DUMMY TrackTAClear(%d, %d, %d, %d) -> %s", zoneID, actID, characterID, score, leaderboardName);
+    // PrintLog(PRINT_NORMAL, "DUMMY TrackTAClear(%d, %d, %d, %d) -> %s", zoneID, actID, characterID, score, leaderboardName);
 }
 void RSDK::SKU::TrackEnemyDefeat(uint8 zoneID, uint8 actID, uint8 characterID, int32 entityX, int32 entityY)
 {
-    PrintLog(PRINT_NORMAL, "DUMMY TrackEnemyDefeat(%d, %d, %d, %d, %d)", zoneID, actID, characterID, entityX, entityY);
+    // PrintLog(PRINT_NORMAL, "DUMMY TrackEnemyDefeat(%d, %d, %d, %d, %d)", zoneID, actID, characterID, entityX, entityY);
 }
-void RSDK::SKU::TrackGameProgress(float percent) { PrintLog(PRINT_NORMAL, "DUMMY TrackGameProgress() -> %f percent complete", percent * 100); }
+void RSDK::SKU::TrackGameProgress(float percent) { /* PrintLog(PRINT_NORMAL, "DUMMY TrackGameProgress() -> %f percent complete", percent * 100); */ }
 #endif

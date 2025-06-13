@@ -567,7 +567,7 @@ void PBL_Crane_StatePrize_PrizeGet(void)
                 sector->active = ACTIVE_NORMAL;
         }
 
-        LogHelpers_PrintInt32("Sector", PBL_Setup->sectorID);
+        // LogHelpers_PrintInt32("Sector", PBL_Setup->sectorID);
         camera->target    = self->cameraTarget;
         camera->rotationY = -96;
 

@@ -298,11 +298,11 @@ void UIControl_ProcessInputs(void)
             }
 #if MANIA_USE_PLUS
             else {
-                LogHelpers_Print("Backout prevented");
-                LogHelpers_Print("childHasFocus = %d", self->childHasFocus);
-                LogHelpers_Print("dialogHasFocus = %d", self->dialogHasFocus);
-                LogHelpers_Print("popoverHasFocus = %d", self->popoverHasFocus);
-                LogHelpers_Print("backoutTimer = %d", self->backoutTimer);
+                // LogHelpers_Print("Backout prevented");
+                // LogHelpers_Print("childHasFocus = %d", self->childHasFocus);
+                // LogHelpers_Print("dialogHasFocus = %d", self->dialogHasFocus);
+                // LogHelpers_Print("popoverHasFocus = %d", self->popoverHasFocus);
+                // LogHelpers_Print("backoutTimer = %d", self->backoutTimer);
             }
 #endif
         }
@@ -426,7 +426,7 @@ void UIControl_SetActiveMenuButtonPrompts(EntityUIControl *entity)
 void UIControl_SetActiveMenu(EntityUIControl *entity)
 {
 #if MANIA_USE_PLUS
-    LogHelpers_PrintString(&entity->tag);
+    // LogHelpers_PrintString(&entity->tag);
 #endif
 
     entity->active  = ACTIVE_ALWAYS;

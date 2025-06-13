@@ -38,48 +38,48 @@ void Localization_LoadStrings(void)
 
     switch (Localization->language) {
         case LANGUAGE_EN:
-            LogHelpers_Print("Loading EN strings...");
+            // LogHelpers_Print("Loading EN strings...");
             RSDK.LoadStringList(&Localization->text, "StringsEN.txt", 16);
             break;
 
         case LANGUAGE_FR:
-            LogHelpers_Print("Loading FR strings...");
+            // LogHelpers_Print("Loading FR strings...");
             RSDK.LoadStringList(&Localization->text, "StringsFR.txt", 16);
             break;
 
         case LANGUAGE_IT:
-            LogHelpers_Print("Loading IT strings...");
+            // LogHelpers_Print("Loading IT strings...");
             RSDK.LoadStringList(&Localization->text, "StringsIT.txt", 16);
             break;
 
         case LANGUAGE_GE:
-            LogHelpers_Print("Loading GE strings...");
+            // LogHelpers_Print("Loading GE strings...");
             RSDK.LoadStringList(&Localization->text, "StringsGE.txt", 16);
             break;
 
         case LANGUAGE_SP:
-            LogHelpers_Print("Loading SP strings...");
+            // LogHelpers_Print("Loading SP strings...");
             RSDK.LoadStringList(&Localization->text, "StringsSP.txt", 16);
             break;
 
         case LANGUAGE_JP:
-            LogHelpers_Print("Loading JP strings...");
+            // LogHelpers_Print("Loading JP strings...");
             RSDK.LoadStringList(&Localization->text, "StringsJP.txt", 16);
             break;
 
 #if GAME_VERSION != VER_100
         case LANGUAGE_KO:
-            LogHelpers_Print("Loading KO strings...");
+            // LogHelpers_Print("Loading KO strings...");
             RSDK.LoadStringList(&Localization->text, "StringsKO.txt", 16);
             break;
 
         case LANGUAGE_SC:
-            LogHelpers_Print("Loading Simp Chinese strings...");
+            // LogHelpers_Print("Loading Simp Chinese strings...");
             RSDK.LoadStringList(&Localization->text, "StringsSC.txt", 16);
             break;
 
         case LANGUAGE_TC:
-            LogHelpers_Print("Loading Trad Chinese strings...");
+            // LogHelpers_Print("Loading Trad Chinese strings...");
             RSDK.LoadStringList(&Localization->text, "StringsTC.txt", 16);
             break;
 #endif

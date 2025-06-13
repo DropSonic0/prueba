@@ -51,13 +51,13 @@ void UIPopover_StageLoad(void)
 EntityUIPopover *UIPopover_CreatePopover(void)
 {
     if (UIPopover->activePopover) {
-        LogHelpers_Print("EXCEPTION: Called CreatePopover when an activePopover already existed.");
+        // LogHelpers_Print("EXCEPTION: Called CreatePopover when an activePopover already existed.");
         return NULL;
     }
     else {
         if (RSDK_GET_ENTITY(SLOT_POPOVER, UIPopover)->classID) {
-            LogHelpers_Print("Can't create UIPopover (%d), entity already exists in slot (class ID: %d)", UIPopover->classID,
-                             RSDK_GET_ENTITY(SLOT_POPOVER, UIPopover)->classID);
+            // LogHelpers_Print("Can't create UIPopover (%d), entity already exists in slot (class ID: %d)", UIPopover->classID,
+                             // RSDK_GET_ENTITY(SLOT_POPOVER, UIPopover)->classID);
             return NULL;
         }
         else {

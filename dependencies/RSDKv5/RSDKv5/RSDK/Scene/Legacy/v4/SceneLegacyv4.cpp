@@ -414,8 +414,8 @@ void RSDK::Legacy::v4::LoadStageFiles()
     InitFileInfo(&info);
 
     if (!CheckCurrentStageFolder()) {
-        PrintLog(PRINT_NORMAL, "Loading Scene %s - %s", sceneInfo.listCategory[sceneInfo.activeCategory].name,
-                 sceneInfo.listData[sceneInfo.listPos].name);
+        // PrintLog(PRINT_NORMAL, "Loading Scene %s - %s", sceneInfo.listCategory[sceneInfo.activeCategory].name,
+                 // sceneInfo.listData[sceneInfo.listPos].name);
 
         // Unload stage sfx & audio channels
         ClearStageSfx();
@@ -593,8 +593,8 @@ void RSDK::Legacy::v4::LoadStageFiles()
         LoadStageBackground();
     }
     else {
-        PrintLog(PRINT_NORMAL, "Reloading Scene %s - %s", sceneInfo.listCategory[sceneInfo.activeCategory].name,
-                 sceneInfo.listData[sceneInfo.listPos].name);
+        // PrintLog(PRINT_NORMAL, "Reloading Scene %s - %s", sceneInfo.listCategory[sceneInfo.activeCategory].name,
+                 // sceneInfo.listData[sceneInfo.listPos].name);
     }
     LoadStageChunks();
 
@@ -666,7 +666,7 @@ void RSDK::Legacy::v4::LoadActLayout()
         objectCount |= ReadInt8(&info) << 8;
 #if !RETRO_USE_ORIGINAL_CODE
         if (objectCount > 0x400)
-            PrintLog(PRINT_NORMAL, "WARNING: object count %d exceeds the object limit", objectCount);
+            // PrintLog(PRINT_NORMAL, "WARNING: object count %d exceeds the object limit", objectCount);
 #endif
 
 #if RETRO_USE_MOD_LOADER

@@ -96,7 +96,7 @@ bool RenderDevice::Init()
 {
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (!display) {
-        PrintLog(PRINT_NORMAL, "[EGL] Could not connect to display: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] Could not connect to display: %d", eglGetError());
         return false;
     }
 
@@ -104,7 +104,7 @@ bool RenderDevice::Init()
 
 #if RETRO_PLATFORM == RETRO_SWITCH
     if (eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
-        PrintLog(PRINT_NORMAL, "[EGL] eglBindApi failure: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] eglBindApi failure: %d", eglGetError());
         return false;
     }
 #elif RETRO_PLATFORM == RETRO_ANDROID
@@ -127,7 +127,7 @@ bool RenderDevice::Init()
     // clang-format on
     eglChooseConfig(display, framebufferAttributeList, &config, 1, &numConfigs);
     if (numConfigs == 0) {
-        PrintLog(PRINT_NORMAL, "[EGL] No configs found: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] No configs found: %d", eglGetError());
         return false;
     }
 
@@ -150,7 +150,7 @@ bool RenderDevice::SetupRendering()
 #elif RETRO_PLATFORM == RETRO_ANDROID
     EGLint format;
     if (!eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format)) {
-        PrintLog(PRINT_NORMAL, "[EGL] EGL_NATIVE_VISUAL_ID fetch failed: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] EGL_NATIVE_VISUAL_ID fetch failed: %d", eglGetError());
         return false;
     }
     if (!window) {
@@ -169,7 +169,7 @@ bool RenderDevice::SetupRendering()
 
     surface = eglCreateWindowSurface(display, config, window, nullptr);
     if (!surface) {
-        PrintLog(PRINT_NORMAL, "[EGL] Surface creation failed: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] Surface creation failed: %d", eglGetError());
         return false;
     }
 
@@ -192,9 +192,9 @@ bool RenderDevice::SetupRendering()
 
     context = eglCreateContext(display, config, EGL_NO_CONTEXT, (EGLint *)attributeListList[i]);
     while (!context) {
-        PrintLog(PRINT_NORMAL, "[EGL] Context creation failed: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] Context creation failed: %d", eglGetError());
         if (++i < listCount) {
-            PrintLog(PRINT_NORMAL, "[EGL] Trying next context...");
+            // PrintLog(PRINT_NORMAL, "[EGL] Trying next context...");
             context = eglCreateContext(display, config, EGL_NO_CONTEXT, (EGLint *)attributeListList[i]);
         }
         else
@@ -203,7 +203,7 @@ bool RenderDevice::SetupRendering()
 
     eglMakeCurrent(display, surface, surface, context);
     eglQueryContext(display, context, EGL_CONTEXT_CLIENT_VERSION, &i);
-    PrintLog(PRINT_NORMAL, "[EGL] Context client version: %d", i);
+    // PrintLog(PRINT_NORMAL, "[EGL] Context client version: %d", i);
 
     GetDisplays();
 
@@ -239,7 +239,7 @@ bool RenderDevice::InitGraphicsAPI()
 {
 #if RETRO_PLATFORM == RETRO_SWITCH
     if (!gladLoadGL()) {
-        PrintLog(PRINT_NORMAL, "[EGL] gladLoadGL failure");
+        // PrintLog(PRINT_NORMAL, "[EGL] gladLoadGL failure");
         return false;
     }
 #else
@@ -723,12 +723,12 @@ void RenderDevice::FlipScreen()
 
 #if RETRO_PLATFORM != RETRO_ANDROID
     if (!eglSwapBuffers(display, surface)) {
-        PrintLog(PRINT_NORMAL, "[EGL] Failed to swap buffers: %d", eglGetError());
+        // PrintLog(PRINT_NORMAL, "[EGL] Failed to swap buffers: %d", eglGetError());
     }
 #else
     if (!SwappyGL_swap(display, surface)) {
         if (SwappyGL_isEnabled()) {
-            PrintLog(PRINT_NORMAL, "[EGL] Failed to swap buffers: %d", eglGetError());
+            // PrintLog(PRINT_NORMAL, "[EGL] Failed to swap buffers: %d", eglGetError());
         }
     }
 #endif
@@ -830,13 +830,13 @@ bool RenderDevice::InitShaders()
         glGetShaderiv(vert, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(vert, 0x1000, NULL, infoLog);
-            PrintLog(PRINT_NORMAL, "BACKUP vertex shader compiling failed:\n%s", infoLog);
+            // PrintLog(PRINT_NORMAL, "BACKUP vertex shader compiling failed:\n%s", infoLog);
         }        
 
         glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(frag, 0x1000, NULL, infoLog);
-            PrintLog(PRINT_NORMAL, "BACKUP fragment shader compiling failed:\n%s", infoLog);
+            // PrintLog(PRINT_NORMAL, "BACKUP fragment shader compiling failed:\n%s", infoLog);
         }     
 
         shader->programID = glCreateProgram();
@@ -900,7 +900,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
         glGetShaderiv(vert, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(vert, 0x1000, NULL, infoLog);
-            PrintLog(PRINT_NORMAL, "Vertex shader compiling failed:\n%s", infoLog);
+            // PrintLog(PRINT_NORMAL, "Vertex shader compiling failed:\n%s", infoLog);
             return;
         }     
     }
@@ -925,7 +925,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
         glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(frag, 0x1000, NULL, infoLog);
-            PrintLog(PRINT_NORMAL, "Fragment shader compiling failed:\n%s", infoLog);
+            // PrintLog(PRINT_NORMAL, "Fragment shader compiling failed:\n%s", infoLog);
             return;
         }     
     }
@@ -944,7 +944,7 @@ void RenderDevice::LoadShader(const char *fileName, bool32 linear)
     glGetProgramiv(shader->programID, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shader->programID, 0x1000, NULL, infoLog);
-        PrintLog(PRINT_NORMAL, "OpenGL shader linking failed:\n%s", infoLog);
+        // PrintLog(PRINT_NORMAL, "OpenGL shader linking failed:\n%s", infoLog);
         return;
     }
     glDeleteShader(vert);

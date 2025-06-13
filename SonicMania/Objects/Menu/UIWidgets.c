@@ -70,7 +70,7 @@ void UIWidgets_StageLoad(void)
 
 void UIWidgets_ApplyLanguage(void)
 {
-    LogHelpers_Print("Apply Language %d", Localization->language);
+    // LogHelpers_Print("Apply Language %d", Localization->language);
 
     switch (Localization->language) {
         case LANGUAGE_EN: UIWidgets->textFrames = RSDK.LoadSpriteAnimation("UI/TextEN.bin", SCOPE_STAGE); break;

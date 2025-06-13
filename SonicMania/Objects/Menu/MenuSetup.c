@@ -154,7 +154,7 @@ void MenuSetup_StageLoad(void)
 {
 #if MANIA_USE_PLUS
     EntityMenuParam *param = MenuParam_GetParam();
-    LogHelpers_Print("Menu recall ctrl: %s", param->menuTag);
+    // LogHelpers_Print("Menu recall ctrl: %s", param->menuTag);
 
     MenuSetup->initializedMenuReturn = false;
     MenuSetup->initializedMenu       = false;
@@ -173,19 +173,19 @@ void MenuSetup_StageLoad(void)
 
     if (!SceneInfo->inEditor) {
         switch (sku_platform) {
-            case PLATFORM_PC: LogHelpers_Print("PC SKU"); break;
-            case PLATFORM_PS4: LogHelpers_Print("PS4 SKU"); break;
-            case PLATFORM_XB1: LogHelpers_Print("XB1 SKU"); break;
-            case PLATFORM_SWITCH: LogHelpers_Print("NX SKU"); break;
-            case PLATFORM_DEV: LogHelpers_Print("DEV SKU"); break;
-            default: LogHelpers_Print("INVALID PLATFORM: %d", sku_platform); break;
+            case PLATFORM_PC: // LogHelpers_Print("PC SKU"); break;
+            case PLATFORM_PS4: // LogHelpers_Print("PS4 SKU"); break;
+            case PLATFORM_XB1: // LogHelpers_Print("XB1 SKU"); break;
+            case PLATFORM_SWITCH: // LogHelpers_Print("NX SKU"); break;
+            case PLATFORM_DEV: // LogHelpers_Print("DEV SKU"); break;
+            default: // LogHelpers_Print("INVALID PLATFORM: %d", sku_platform); break;
         }
 
         switch (sku_region) {
-            case REGION_US: LogHelpers_Print("US REGION"); break;
-            case REGION_JP: LogHelpers_Print("JP REGION"); break;
-            case REGION_EU: LogHelpers_Print("EU REGION"); break;
-            default: LogHelpers_Print("INVALID REGION: %d", sku_region); break;
+            case REGION_US: // LogHelpers_Print("US REGION"); break;
+            case REGION_JP: // LogHelpers_Print("JP REGION"); break;
+            case REGION_EU: // LogHelpers_Print("EU REGION"); break;
+            default: // LogHelpers_Print("INVALID REGION: %d", sku_region); break;
         }
     }
 
@@ -1552,7 +1552,7 @@ void MenuSetup_VS_Round_MenuSetupCB(void)
     scoreboard->winnerID   = winner;
 
     if (matchWinner) {
-        LogHelpers_Print("Announce_CharWins(%d)", session->playerID[winner]);
+        // LogHelpers_Print("Announce_CharWins(%d)", session->playerID[winner]);
 
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceWinPlayer;
@@ -1686,7 +1686,7 @@ void MenuSetup_VS_Total_MenuSetupCB(void)
     scoreboard->winnerID   = session->wins[1] > session->wins[0];
 
     if (scoreboard->showWinner) {
-        LogHelpers_Print("Announce_WinnerIs(%d)", scoreboard->winnerID);
+        // LogHelpers_Print("Announce_WinnerIs(%d)", scoreboard->winnerID);
         EntityAnnouncer *announcer = CREATE_ENTITY(Announcer, NULL, 0, 0);
         announcer->state           = Announcer_State_AnnounceWinner;
         announcer->playerID        = scoreboard->winnerID;
@@ -1771,7 +1771,7 @@ void MenuSetup_VS_BackoutFromVsCharSelect_CB(void)
 
 bool32 MenuSetup_VS_BackoutFromVsCharSelect(void)
 {
-    LogHelpers_Print("BackoutFromVsCharSelect()");
+    // LogHelpers_Print("BackoutFromVsCharSelect()");
     EntityUIControl *control = MenuSetup->competition;
 
     for (int32 i = 0; i < control->buttonCount; ++i) {

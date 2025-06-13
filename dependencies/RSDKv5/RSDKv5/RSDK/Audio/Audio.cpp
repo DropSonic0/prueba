@@ -361,7 +361,7 @@ void RSDK::LoadSfxToSlot(char *filename, uint8 slot, uint8 plays, uint8 scope)
                             // meaning that the game will consider the SFX valid and allow it to be played.
                             // This can cause a crash because the SFX is incomplete.
 #if !RETRO_USE_ORIGINAL_CODE
-                            PrintLog(PRINT_ERROR, "Unable to read sfx: %s", filename);
+                            // PrintLog(PRINT_ERROR, "Unable to read sfx: %s", filename);
 #endif
                             return;
                         }
@@ -403,20 +403,20 @@ void RSDK::LoadSfxToSlot(char *filename, uint8 slot, uint8 plays, uint8 scope)
             }
 #if !RETRO_USE_ORIGINAL_CODE
             else {
-                PrintLog(PRINT_ERROR, "Invalid header in sfx: %s", filename);
+                // PrintLog(PRINT_ERROR, "Invalid header in sfx: %s", filename);
             }
 #endif
         }
 #if !RETRO_USE_ORIGINAL_CODE
         else {
             // what the
-            PrintLog(PRINT_ERROR, "Could not find header in sfx: %s", filename);
+            // PrintLog(PRINT_ERROR, "Could not find header in sfx: %s", filename);
         }
 #endif
     }
 #if !RETRO_USE_ORIGINAL_CODE
     else {
-        PrintLog(PRINT_ERROR, "Unable to open sfx: %s", filename);
+        // PrintLog(PRINT_ERROR, "Unable to open sfx: %s", filename);
     }
 #endif
 

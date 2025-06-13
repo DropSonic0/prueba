@@ -263,7 +263,7 @@ void Competition_DeriveWinner(int32 playerID, uint8 finishType)
                     if (session->items[p] == winnerItems)
                         ++score;
 
-                    LogHelpers_Print("player %d => score %d", p, score);
+                    // LogHelpers_Print("player %d => score %d", p, score);
 
                     scores[p] = score;
                     if (score > winner)

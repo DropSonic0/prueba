@@ -11,17 +11,17 @@ bool32 AudioDevice::Init()
     PaError result;
     result = Pa_Initialize();
     if (result != paNoError) {
-        PrintLog(PRINT_NORMAL, "[PA] Initialization failed: %s", Pa_GetErrorText(result));
+        // PrintLog(PRINT_NORMAL, "[PA] Initialization failed: %s", Pa_GetErrorText(result));
         return false;
     }
     result = Pa_OpenDefaultStream(&stream, 0, AUDIO_CHANNELS, paFloat32, AUDIO_FREQUENCY, MIX_BUFFER_SIZE, AudioCallback, nullptr);
     if (result != paNoError) {
-        PrintLog(PRINT_NORMAL, "[PA] Opening stream failed: %s", Pa_GetErrorText(result));
+        // PrintLog(PRINT_NORMAL, "[PA] Opening stream failed: %s", Pa_GetErrorText(result));
         return false;
     }
     result = Pa_StartStream(stream);
     if (result != paNoError) {
-        PrintLog(PRINT_NORMAL, "[PA] Starting stream failed: %s", Pa_GetErrorText(result));
+        // PrintLog(PRINT_NORMAL, "[PA] Starting stream failed: %s", Pa_GetErrorText(result));
         return false;
     }
     return true;

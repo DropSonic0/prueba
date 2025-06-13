@@ -212,7 +212,7 @@ void ReplayRecorder_StageLoad(void)
                 }
             }
 
-            LogHelpers_Print("CharID: %08x", globals->playerID);
+            // LogHelpers_Print("CharID: %08x", globals->playerID);
         }
     }
 }
@@ -233,7 +233,7 @@ void ReplayRecorder_TitleCardCB(void)
 
 void ReplayRecorder_Resume(EntityReplayRecorder *recorder)
 {
-    LogHelpers_Print("ReplayRecorder_Resume()");
+    // LogHelpers_Print("ReplayRecorder_Resume()");
     recorder->paused          = false;
     recorder->player->visible = true;
 }
@@ -274,7 +274,7 @@ void ReplayRecorder_Buffer_Move(void)
     if (replayPtr->header.isNotEmpty) {
         if (replayPtr->header.frameCount < ReplayRecorder->recordingManager->maxFrameCount - 1) {
             memset(globals->replayTempWBuffer, 0, sizeof(globals->replayTempWBuffer));
-            LogHelpers_Print("Buffer_Move(0x%08x, 0x%08x)", globals->replayTempWBuffer, replayPtr);
+            // LogHelpers_Print("Buffer_Move(0x%08x, 0x%08x)", globals->replayTempWBuffer, replayPtr);
             memcpy(globals->replayTempWBuffer, replayPtr, sizeof(globals->replayTempWBuffer));
             memset(replayPtr, 0, sizeof(globals->replayWriteBuffer));
             ReplayRecorder_Buffer_PackInPlace(globals->replayTempWBuffer);
@@ -299,13 +299,13 @@ void ReplayRecorder_SaveReplayDLG_YesCB(void)
     int32 mins      = SceneInfo->minutes;
     int32 secs      = SceneInfo->seconds;
     int32 millisecs = SceneInfo->milliseconds;
-    LogHelpers_Print("Bout to create ReplayDB entry...");
+    // LogHelpers_Print("Bout to create ReplayDB entry...");
 
     EntityMenuParam *param = MenuParam_GetParam();
     int32 rowID            = ReplayDB_AddReplay(param->zoneID, param->actID, param->characterID, millisecs + 100 * (secs + 60 * mins),
                                              SceneInfo->filter == (FILTER_BOTH | FILTER_ENCORE));
     if (rowID == -1) {
-        LogHelpers_Print("Table row ID invalid! %d", -1);
+        // LogHelpers_Print("Table row ID invalid! %d", -1);
         ReplayRecorder_SaveFile_Replay(false);
     }
     else {
@@ -314,7 +314,7 @@ void ReplayRecorder_SaveReplayDLG_YesCB(void)
 
         char fileName[0x20];
         sprintf_s(fileName, (int32)sizeof(fileName), "Replay_%08X.bin", ReplayRecorder->replayID);
-        LogHelpers_Print("Replay Filename: %s", fileName);
+        // LogHelpers_Print("Replay Filename: %s", fileName);
         UIWaitSpinner_StartWait();
 
         ReplayRecorder->savedReplay = true;
@@ -337,7 +337,7 @@ void ReplayRecorder_SaveReplay(void)
     Replay *replayPtr = (Replay *)globals->replayTempWBuffer;
 
     if (replayPtr->header.isNotEmpty) {
-        LogHelpers_Print("Saving replay...");
+        // LogHelpers_Print("Saving replay...");
 
         foreach_all(HUD, hud) { foreach_break; }
         RSDK.SetSpriteAnimation(HUD->aniFrames, 11, &hud->replayClapAnimator, true, 0);
@@ -349,7 +349,7 @@ void ReplayRecorder_SaveReplay(void)
         callback->isPermanent        = true;
     }
     else {
-        LogHelpers_Print("Can't save replay! No data available");
+        // LogHelpers_Print("Can't save replay! No data available");
         ActClear->disableResultsInput = false;
     }
 }
@@ -357,7 +357,7 @@ void ReplayRecorder_SaveReplay(void)
 void ReplayRecorder_SaveFile_Replay(bool32 success)
 {
     if (success) {
-        LogHelpers_Print("Replay save successful!");
+        // LogHelpers_Print("Replay save successful!");
         ReplayDB_SaveDB(ReplayRecorder_SaveCallback_ReplayDB);
     }
     else {
@@ -443,11 +443,11 @@ void ReplayRecorder_Buffer_PackInPlace(int32 *tempWriteBuffer)
 {
     Replay *replayPtr = (Replay *)tempWriteBuffer;
 
-    LogHelpers_Print("Buffer_PackInPlace(%08x)", tempWriteBuffer);
+    // LogHelpers_Print("Buffer_PackInPlace(%08x)", tempWriteBuffer);
 
     if (replayPtr->header.signature == REPLAY_SIGNATURE) {
         if (replayPtr->header.isPacked) {
-            LogHelpers_Print("Buffer_Ppack ERROR: Buffer is already packed");
+            // LogHelpers_Print("Buffer_Ppack ERROR: Buffer is already packed");
         }
         else {
             int32 compressedSize   = sizeof(ReplayHeader);
@@ -466,20 +466,20 @@ void ReplayRecorder_Buffer_PackInPlace(int32 *tempWriteBuffer)
                 compressedSize += size;
                 framePtr++;
             }
-            LogHelpers_Print("Packed %d frames: %luB -> %luB", replayPtr->header.frameCount, uncompressedSize, compressedSize);
+            // LogHelpers_Print("Packed %d frames: %luB -> %luB", replayPtr->header.frameCount, uncompressedSize, compressedSize);
 
             replayPtr->header.bufferSize = compressedSize;
             replayPtr->header.isPacked   = true;
         }
     }
     else {
-        LogHelpers_Print("Buffer_Pack ERROR: Signature does not match");
+        // LogHelpers_Print("Buffer_Pack ERROR: Signature does not match");
     }
 }
 
 void ReplayRecorder_Buffer_Unpack(int32 *readBuffer, int32 *tempReadBuffer)
 {
-    LogHelpers_Print("Buffer_Unpack(0x%08x, 0x%08x)", readBuffer, tempReadBuffer);
+    // LogHelpers_Print("Buffer_Unpack(0x%08x, 0x%08x)", readBuffer, tempReadBuffer);
     Replay *replayPtr     = (Replay *)readBuffer;
     Replay *tempReplayPtr = (Replay *)tempReadBuffer;
 
@@ -501,24 +501,24 @@ void ReplayRecorder_Buffer_Unpack(int32 *readBuffer, int32 *tempReadBuffer)
                 compressedFrames += size;
                 uncompressedBuffer++;
             }
-            LogHelpers_Print("Unpacked %d frames: %luB -> %luB", tempReplayPtr->header.frameCount, compressedSize, uncompressedSize);
+            // LogHelpers_Print("Unpacked %d frames: %luB -> %luB", tempReplayPtr->header.frameCount, compressedSize, uncompressedSize);
 
             replayPtr->header.isPacked   = false;
             replayPtr->header.bufferSize = uncompressedSize;
             memset(tempReadBuffer, 0, sizeof(globals->replayTempRBuffer));
         }
         else {
-            LogHelpers_Print("Buffer_Unpack ERROR: Buffer is not packed");
+            // LogHelpers_Print("Buffer_Unpack ERROR: Buffer is not packed");
         }
     }
     else {
-        LogHelpers_Print("Buffer_Unpack ERROR: Signature does not match");
+        // LogHelpers_Print("Buffer_Unpack ERROR: Signature does not match");
     }
 }
 
 void ReplayRecorder_Buffer_SaveFile(const char *fileName, int32 *buffer, void (*callback)(bool32 success))
 {
-    LogHelpers_Print("Buffer_SaveFile(%s, %08x)", fileName, buffer);
+    // LogHelpers_Print("Buffer_SaveFile(%s, %08x)", fileName, buffer);
 
     Replay *replayPtr = (Replay *)buffer;
     if (replayPtr->header.isNotEmpty) {
@@ -526,7 +526,7 @@ void ReplayRecorder_Buffer_SaveFile(const char *fileName, int32 *buffer, void (*
         API_SaveUserFile(fileName, buffer, replayPtr->header.bufferSize, ReplayRecorder_SaveReplayCallback, true);
     }
     else {
-        LogHelpers_Print("Attempted to save an empty replay buffer");
+        // LogHelpers_Print("Attempted to save an empty replay buffer");
         if (callback)
             callback(false);
     }
@@ -542,7 +542,7 @@ void ReplayRecorder_SaveReplayCallback(int32 status)
 
 void ReplayRecorder_Buffer_LoadFile(const char *fileName, void *buffer, void (*callback)(bool32 success))
 {
-    LogHelpers_Print("Buffer_LoadFile(%s, %08x)", fileName, buffer);
+    // LogHelpers_Print("Buffer_LoadFile(%s, %08x)", fileName, buffer);
 
     memset(buffer, 0, sizeof(globals->replayReadBuffer));
     ReplayRecorder->fileBuffer   = buffer;
@@ -566,10 +566,10 @@ void ReplayRecorder_ConfigureGhost_CB(void)
 {
     RSDK_THIS(Player);
 
-    LogHelpers_Print("ConfigureGhost_CB()");
-    LogHelpers_Print("Ghost Slot %d", self->playerID);
+    // LogHelpers_Print("ConfigureGhost_CB()");
+    // LogHelpers_Print("Ghost Slot %d", self->playerID);
 
-    LogHelpers_PrintVector2("Ghost pos ", self->position);
+    // LogHelpers_PrintVector2("Ghost pos ", self->position);
     self->isGhost        = true;
     self->stateInput     = StateMachine_None;
     self->state          = ReplayRecorder_PlayerState_PlaybackReplay;
@@ -662,11 +662,11 @@ void ReplayRecorder_SetupWriteBuffer(void)
     replayPtr->header.oscillation   = Zone->timer;
     replayPtr->header.bufferSize    = sizeof(ReplayHeader);
 
-    LogHelpers_Print("characterID = %d", replayPtr->header.characterID);
-    LogHelpers_Print("zoneID = %d", replayPtr->header.zoneID);
-    LogHelpers_Print("act = %d", replayPtr->header.act);
-    LogHelpers_Print("isPlusLayout = %d", replayPtr->header.isPlusLayout);
-    LogHelpers_Print("oscillation = %d", replayPtr->header.oscillation);
+    // LogHelpers_Print("characterID = %d", replayPtr->header.characterID);
+    // LogHelpers_Print("zoneID = %d", replayPtr->header.zoneID);
+    // LogHelpers_Print("act = %d", replayPtr->header.act);
+    // LogHelpers_Print("isPlusLayout = %d", replayPtr->header.isPlusLayout);
+    // LogHelpers_Print("oscillation = %d", replayPtr->header.oscillation);
 }
 
 void ReplayRecorder_DrawGhostDisplay(void)
@@ -746,7 +746,7 @@ void ReplayRecorder_DrawGhostDisplay(void)
 
 void ReplayRecorder_Record(EntityReplayRecorder *recorder, EntityPlayer *player)
 {
-    LogHelpers_Print("ReplayRecorder_Record()");
+    // LogHelpers_Print("ReplayRecorder_Record()");
 
     if (player)
         recorder->player = player;
@@ -761,7 +761,7 @@ void ReplayRecorder_Record(EntityReplayRecorder *recorder, EntityPlayer *player)
 void ReplayRecorder_StartRecording(EntityPlayer *player)
 {
     EntityReplayRecorder *recorder = ReplayRecorder->recordingManager;
-    LogHelpers_Print("ReplayRecorder_StartRecording()");
+    // LogHelpers_Print("ReplayRecorder_StartRecording()");
 
     recorder->active = ACTIVE_NORMAL;
     memset(globals->replayTempWBuffer, 0, sizeof(globals->replayTempWBuffer));
@@ -774,7 +774,7 @@ void ReplayRecorder_StartRecording(EntityPlayer *player)
 
 void ReplayRecorder_Play(EntityPlayer *player)
 {
-    LogHelpers_Print("ReplayRecorder_Play()");
+    // LogHelpers_Print("ReplayRecorder_Play()");
     EntityReplayRecorder *recorder = ReplayRecorder->playbackManager;
 
     Replay *replayPtr = NULL;
@@ -809,20 +809,20 @@ void ReplayRecorder_Play(EntityPlayer *player)
         RSDK.SetVideoSetting(VIDEOSETTING_DIMTIMER, 15 * 60 * 60);
     }
     else {
-        LogHelpers_Print("No replay to play");
+        // LogHelpers_Print("No replay to play");
     }
 }
 
 void ReplayRecorder_Rewind(EntityReplayRecorder *recorder)
 {
-    LogHelpers_Print("ReplayRecorder_Rewind()");
+    // LogHelpers_Print("ReplayRecorder_Rewind()");
 
     recorder->replayFrame = 0;
 }
 
 void ReplayRecorder_Seek(EntityReplayRecorder *recorder, uint32 frame)
 {
-    LogHelpers_Print("ReplayRecorder_Seek(%u)", frame);
+    // LogHelpers_Print("ReplayRecorder_Seek(%u)", frame);
 
     recorder->replayFrame = frame;
 
@@ -875,7 +875,7 @@ void ReplayRecorder_SeekFunc(EntityReplayRecorder *recorder)
 
 void ReplayRecorder_Stop(EntityReplayRecorder *recorder)
 {
-    LogHelpers_Print("ReplayRecorder_Stop()");
+    // LogHelpers_Print("ReplayRecorder_Stop()");
 
     recorder->state     = StateMachine_None;
     recorder->stateLate = StateMachine_None;
@@ -1093,7 +1093,7 @@ void ReplayRecorder_PlayBackInput(void)
 
 void ReplayRecorder_Pause(EntityReplayRecorder *recorder)
 {
-    LogHelpers_Print("ReplayRecorder_Pause()");
+    // LogHelpers_Print("ReplayRecorder_Pause()");
 
     recorder->paused = true;
 }

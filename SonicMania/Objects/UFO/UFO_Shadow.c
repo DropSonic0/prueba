@@ -128,7 +128,7 @@ void UFO_Shadow_StageLoad(void)
     }
 #endif
 
-    LogHelpers_Print("%d shadow entities spawned", TEMPENTITY_START - slot);
+    // LogHelpers_Print("%d shadow entities spawned", TEMPENTITY_START - slot);
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -28,7 +28,7 @@ void ExtrasMenu_Initialize(void)
     INIT_STRING(tag);
     RSDK.SetString(&tag, "Extras");
 
-    LogHelpers_Print("ManiaModeMenu_Initialize()");
+    // LogHelpers_Print("ManiaModeMenu_Initialize()");
 
     foreach_all(UIControl, control)
     {

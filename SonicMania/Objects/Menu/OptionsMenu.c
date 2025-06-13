@@ -24,7 +24,7 @@ void OptionsMenu_StageLoad(void) {}
 
 void OptionsMenu_Initialize(void)
 {
-    LogHelpers_Print("ManiaModeMenu_Initialize()");
+    // LogHelpers_Print("ManiaModeMenu_Initialize()");
 
     String tag;
     INIT_STRING(tag);
@@ -813,7 +813,7 @@ void OptionsMenu_AreYouSureDlg_YesCB_EraseTimeAttack(void)
     API.RemoveAllDBRows(globals->taTableID);
 
     TimeAttackData_SaveDB(OptionsMenu_EraseSaveDataCB);
-    LogHelpers_Print("TimeAttack table ID = %d, status = %d", globals->taTableID, globals->taTableLoaded);
+    // LogHelpers_Print("TimeAttack table ID = %d, status = %d", globals->taTableID, globals->taTableLoaded);
 }
 
 void OptionsMenu_EraseTimeAttackButton_ActionCB(void)

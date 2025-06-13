@@ -72,7 +72,7 @@ void DialogRunner_HandleCallback(void)
     RSDK_THIS(DialogRunner);
 
     if (self->timer <= 0) {
-        LogHelpers_Print("Callback: %x", self->callback);
+        // LogHelpers_Print("Callback: %x", self->callback);
         StateMachine_Run(self->callback);
         destroyEntity(self);
     }
@@ -242,7 +242,7 @@ void DialogRunner_TrackGameProgressCB(bool32 success) { UIWaitSpinner_FinishWait
 void DialogRunner_GetNextNotif(void)
 {
     if (SceneInfo->inEditor || API.GetNoSave() || globals->saveLoaded != STATUS_OK) {
-        LogHelpers_Print("WARNING GameProgress Attempted to save before loading SaveGame file");
+        // LogHelpers_Print("WARNING GameProgress Attempted to save before loading SaveGame file");
         return;
     }
     else {
@@ -272,7 +272,7 @@ bool32 DialogRunner_NotifyAutosave(void)
         UIWaitSpinner_StartWait();
         DialogRunner->isAutoSaving = true;
         globals->notifiedAutosave  = false;
-        LogHelpers_Print("DUMMY NotifyAutosave()");
+        // LogHelpers_Print("DUMMY NotifyAutosave()");
         EntityDialogRunner *dialogRunner = CREATE_ENTITY(DialogRunner, DialogRunner_NotifyAutoSave, 0, 0);
         dialogRunner->active             = ACTIVE_ALWAYS;
         DialogRunner->activeCallback     = dialogRunner;
@@ -304,14 +304,14 @@ void DialogRunner_GetUserAuthStatus(void)
 void DialogRunner_PromptSavePreference(int32 id)
 {
     if (API.GetNoSave()) {
-        LogHelpers_Print("PromptSavePreference() returning due to noSave");
+        // LogHelpers_Print("PromptSavePreference() returning due to noSave");
         return;
     }
 
-    LogHelpers_Print("PromptSavePreference()");
+    // LogHelpers_Print("PromptSavePreference()");
 
     if (API.GetSaveStatus() == STATUS_CONTINUE)
-        LogHelpers_Print("WARNING PromptSavePreference() when prompt already in progress.");
+        // LogHelpers_Print("WARNING PromptSavePreference() when prompt already in progress.");
 
     API.ClearSaveStatus();
 

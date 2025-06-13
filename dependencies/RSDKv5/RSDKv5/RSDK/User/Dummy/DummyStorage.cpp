@@ -4,7 +4,7 @@ int32 DummyUserStorage::TryAuth()
     if (authStatus == STATUS_CONTINUE) {
         std::string str = __FILE__;
         str += ": TryAuth() # WARNING TryAuth() when auth currently in progress. \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
     }
 
     if (!authStatus) {
@@ -18,7 +18,7 @@ int32 DummyUserStorage::TryInitStorage()
     if (storageStatus == STATUS_CONTINUE) {
         std::string str = __FILE__;
         str += ": TryInitStorage() # WARNING TryInitStorage() when auth currently in progress. \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
     }
     else {
         storageStatus   = STATUS_CONTINUE;
@@ -128,7 +128,7 @@ bool32 DummyUserStorage::TryLoadUserFile(const char *filename, void *buffer, uin
         str += ": TryLoadUserFile() # TryLoadUserFile(";
         str += filename;
         str += ", ...) failing due to noSave \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
 
         if (callback)
             callback(STATUS_ERROR);
@@ -167,7 +167,7 @@ bool32 DummyUserStorage::TrySaveUserFile(const char *filename, void *buffer, uin
         str += ": TrySaveUserFile() # TrySaveUserFile(";
         str += filename;
         str += ", ...) failing due to noSave \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
 
         if (callback)
             callback(STATUS_ERROR);
@@ -192,7 +192,7 @@ bool32 DummyUserStorage::TryDeleteUserFile(const char *filename, void (*callback
         str += ": TryDeleteUserFile() # TryDeleteUserFile(";
         str += filename;
         str += ", ...) failing due to noSave \r\n";
-        PrintLog(PRINT_NORMAL, str.c_str());
+        // PrintLog(PRINT_NORMAL, str.c_str());
 
         if (callback)
             callback(STATUS_ERROR);

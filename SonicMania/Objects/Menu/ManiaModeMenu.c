@@ -24,7 +24,7 @@ void ManiaModeMenu_StageLoad(void) {}
 
 void ManiaModeMenu_Initialize(void)
 {
-    LogHelpers_Print("ManiaModeMenu_Initialize()");
+    // LogHelpers_Print("ManiaModeMenu_Initialize()");
 
     MainMenu_Initialize();
     UISubHeading_Initialize();

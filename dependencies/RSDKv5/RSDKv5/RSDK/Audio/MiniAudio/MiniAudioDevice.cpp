@@ -20,13 +20,13 @@ bool32 AudioDevice::Init()
 
     ma_result result = ma_device_init(NULL, &config, &device);
     if (result != MA_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[MA] Initializing device failed: %d", result);
+        // PrintLog(PRINT_NORMAL, "[MA] Initializing device failed: %d", result);
         return false;
     }
 
     result = ma_device_start(&device);
     if (result != MA_SUCCESS) {
-        PrintLog(PRINT_NORMAL, "[MA] Starting device failed: %d", result);
+        // PrintLog(PRINT_NORMAL, "[MA] Starting device failed: %d", result);
         return false;
     }
 

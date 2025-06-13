@@ -25,7 +25,7 @@ ViewableVariable RSDK::viewableVarList[VIEWVAR_LIST_COUNT];
 
 DevMenu RSDK::devMenu = DevMenu();
 
-inline void PrintConsole(const char *message) { printf("%s", message); }
+inline void PrintConsole(const char *message) { /* printf("%s", message); */ }
 
 void RSDK::PrintLog(int32 mode, const char *message, ...)
 {
@@ -77,11 +77,11 @@ void RSDK::PrintLog(int32 mode, const char *message, ...)
         }
 #endif
         if (engine.consoleEnabled) {
-            PrintConsole(outputString);
+            // PrintConsole(outputString);
         }
         else {
 #if RETRO_PLATFORM == RETRO_WIN
-            OutputDebugStringA(outputString);
+            // OutputDebugStringA(outputString);
 #elif RETRO_PLATFORM == RETRO_ANDROID
             int32 as = ANDROID_LOG_INFO;
             switch (mode) {
@@ -98,7 +98,7 @@ void RSDK::PrintLog(int32 mode, const char *message, ...)
             jni->env->SetByteArrayRegion(array, 0, len, (jbyte *)outputString);
             jni->env->CallVoidMethod(jni->thiz, writeLog, array, as);
 #elif RETRO_PLATFORM == RETRO_SWITCH
-            printf("%s", outputString);
+            // printf("%s", outputString);
 #endif
         }
 

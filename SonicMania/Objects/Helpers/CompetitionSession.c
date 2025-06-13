@@ -151,7 +151,7 @@ void CompetitionSession_DeriveWinner(int32 playerID, int32 finishType)
                     if (session->items[p] == winnerItems)
                         ++score;
 
-                    LogHelpers_Print("player %d => score %d", p, score);
+                    // LogHelpers_Print("player %d => score %d", p, score);
 
                     scores[p] = score;
                     if (score > winner)
@@ -163,14 +163,14 @@ void CompetitionSession_DeriveWinner(int32 playerID, int32 finishType)
             for (int32 p = 0; p < session->playerCount; ++p) {
                 bool32 isWinner = session->lives[p] > 0 && session->finishState[p] != FINISHTYPE_GAMEOVER && scores[p] == winner;
                 if (isWinner) {
-                    LogHelpers_Print("DeriveWinner() -> %d", p);
+                    // LogHelpers_Print("DeriveWinner() -> %d", p);
                     CompetitionSession_WinMatchFor(p);
                 }
             }
         }
     }
     else {
-        LogHelpers_Print("DeriveWinner() -> %d", -1);
+        // LogHelpers_Print("DeriveWinner() -> %d", -1);
     }
 }
 
@@ -178,7 +178,7 @@ void CompetitionSession_WinMatchFor(int32 player)
 {
     EntityCompetitionSession *session = CompetitionSession_GetSession();
 
-    LogHelpers_Print("CompetitionSession_WinMatchFor(%d)", player);
+    // LogHelpers_Print("CompetitionSession_WinMatchFor(%d)", player);
     ++session->wins[player];
     session->matchWinner[session->matchID] |= (1 << player);
 }

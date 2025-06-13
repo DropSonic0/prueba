@@ -728,8 +728,8 @@ int32 Zone_GetListPos_EncoreMode(void)
     }
     SceneInfo->listPos = maniaListPos;
 
-    LogHelpers_Print("Mania Mode offset %d, pos %d -> Encore Mode offset %d, pos %d", maniaOffset, maniaListPos, encoreListPos - encoreOffset,
-                     encoreListPos);
+    // LogHelpers_Print("Mania Mode offset %d, pos %d -> Encore Mode offset %d, pos %d", maniaOffset, maniaListPos, encoreListPos - encoreOffset,
+                     // encoreListPos);
 
     return encoreListPos;
 }
@@ -760,8 +760,8 @@ int32 Zone_GetListPos_ManiaMode(void)
     }
     SceneInfo->listPos = encoreListPos;
 
-    LogHelpers_Print("Encore Mode offset %d, pos %d -> Mania Mode offset %d, pos %d", encoreOffset, encoreListPos, maniaListPos - maniaOffset,
-                     maniaListPos);
+    // LogHelpers_Print("Encore Mode offset %d, pos %d -> Mania Mode offset %d, pos %d", encoreOffset, encoreListPos, maniaListPos - maniaOffset,
+                     // maniaListPos);
 
     return maniaListPos;
 }

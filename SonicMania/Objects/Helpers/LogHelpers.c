@@ -25,25 +25,25 @@ void LogHelpers_PrintText(const char *message)
 {
 #if MANIA_USE_PLUS
     if (!SceneInfo->inEditor)
-        RSDK.PrintText(PRINT_NORMAL, message);
+        // RSDK.PrintText(PRINT_NORMAL, message);
 #else
-    LogHelpers_Print("%s", message);
+    // LogHelpers_Print("%s", message);
 #endif
 }
 #if MANIA_USE_PLUS
 void LogHelpers_PrintString(String *message)
 {
     if (!SceneInfo->inEditor)
-        RSDK.PrintString(PRINT_NORMAL, message);
+        // RSDK.PrintString(PRINT_NORMAL, message);
 }
 #endif
 void LogHelpers_PrintInt32(const char *message, int32 value)
 {
 #if MANIA_USE_PLUS
     if (!SceneInfo->inEditor)
-        RSDK.PrintInt32(PRINT_NORMAL, message, value);
+        // RSDK.PrintInt32(PRINT_NORMAL, message, value);
 #else
-    LogHelpers_Print("%s: %d", message, value);
+    // LogHelpers_Print("%s: %d", message, value);
 #endif
 }
 
@@ -57,13 +57,13 @@ void LogHelpers_Print(const char *message, ...)
         vsprintf(messageText, message, args);
 
 #if MANIA_USE_PLUS
-        RSDK.PrintText(PRINT_NORMAL, messageText);
+        // RSDK.PrintText(PRINT_NORMAL, messageText);
 #else
         int32 len            = (int32)strlen(messageText);
         messageText[len]     = '\n';
         messageText[len + 1] = 0;
 
-        RSDK.PrintMessage((void *)messageText, MESSAGE_STRING);
+        // RSDK.PrintMessage((void *)messageText, MESSAGE_STRING);
 #endif
 
         va_end(args);
@@ -74,7 +74,7 @@ void LogHelpers_Print(const char *message, ...)
 void LogHelpers_PrintVector2(const char *message, Vector2 value)
 {
     if (!SceneInfo->inEditor)
-        RSDK.PrintVector2(PRINT_NORMAL, message, value);
+        // RSDK.PrintVector2(PRINT_NORMAL, message, value);
 }
 #endif
 

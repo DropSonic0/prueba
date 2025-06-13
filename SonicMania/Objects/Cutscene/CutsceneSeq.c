@@ -30,12 +30,12 @@ void CutsceneSeq_LateUpdate(void)
 
         ++self->timer;
         if (finishedState) {
-            LogHelpers_Print("State completed");
+            // LogHelpers_Print("State completed");
             CutsceneSeq_NewState(self->stateID + 1, self);
         }
 
         if (!self->cutsceneStates[self->stateID]) {
-            LogHelpers_Print("Sequence completed");
+            // LogHelpers_Print("Sequence completed");
             destroyEntity(self);
         }
     }
@@ -70,7 +70,7 @@ void CutsceneSeq_Draw(void)
         Vector2 *point = &self->points[p];
         if (point->x || point->y) {
 #if MANIA_USE_PLUS
-            LogHelpers_PrintVector2("Draw poi ", *point);
+            // LogHelpers_PrintVector2("Draw poi ", *point);
 #endif
             DrawHelpers_DrawCross(point->x, point->y, TO_FIXED(32), TO_FIXED(32), colors[p]);
         }
@@ -215,12 +215,12 @@ void CutsceneSeq_StartSequence(void *manager, ...)
         if (!state)
             break;
 
-        LogHelpers_Print("state = %x", state);
+        // LogHelpers_Print("state = %x", state);
         cutsceneSeq->cutsceneStates[count] = (bool32(*)(EntityCutsceneSeq *))state;
     }
     va_end(list);
 
-    LogHelpers_Print("Starting sequence with %d states", count);
+    // LogHelpers_Print("Starting sequence with %d states", count);
 }
 
 #if GAME_INCLUDE_EDITOR

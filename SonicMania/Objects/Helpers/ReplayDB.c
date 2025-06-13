@@ -40,7 +40,7 @@ void ReplayDB_LoadDB(void (*callback)(bool32 success))
             callback(false);
     }
     else {
-        LogHelpers_Print("Loading Replay DB");
+        // LogHelpers_Print("Loading Replay DB");
         globals->replayTableLoaded = STATUS_CONTINUE;
 
         ReplayDB->loadEntity   = SceneInfo->entity;
@@ -48,7 +48,7 @@ void ReplayDB_LoadDB(void (*callback)(bool32 success))
         globals->replayTableID = API.LoadUserDB("ReplayDB.bin", ReplayDB_LoadDBCallback);
 
         if (globals->replayTableID == -1) {
-            LogHelpers_Print("Couldn't claim a slot for loading %s", "ReplayDB.bin");
+            // LogHelpers_Print("Couldn't claim a slot for loading %s", "ReplayDB.bin");
             globals->replayTableLoaded = STATUS_ERROR;
         }
     }
@@ -61,7 +61,7 @@ void ReplayDB_SaveDB(void (*callback)(bool32 success))
             callback(false);
     }
     else {
-        LogHelpers_Print("Saving Replay DB");
+        // LogHelpers_Print("Saving Replay DB");
         ReplayDB->saveEntity   = SceneInfo->entity;
         ReplayDB->saveCallback = callback;
         API.SaveUserDB(globals->replayTableID, ReplayDB_SaveDBCallback);
@@ -86,10 +86,10 @@ uint32 ReplayDB_AddReplay(uint8 zoneID, uint8 act, uint8 characterID, int32 scor
         sprintf_s(createTime, (int32)sizeof(createTime), "");
         API.GetUserDBRowCreationTime(globals->replayTableID, rowID, createTime, sizeof(createTime) - 1, "%Y/%m/%d %H:%M:%S");
 
-        LogHelpers_Print("Replay DB Added Entry");
-        LogHelpers_Print("Created at %s", createTime);
-        LogHelpers_Print("Row ID: %d", rowID);
-        LogHelpers_Print("UUID: %08X", UUID);
+        // LogHelpers_Print("Replay DB Added Entry");
+        // LogHelpers_Print("Created at %s", createTime);
+        // LogHelpers_Print("Row ID: %d", rowID);
+        // LogHelpers_Print("UUID: %08X", UUID);
 
         return rowID;
     }
@@ -113,7 +113,7 @@ void ReplayDB_DeleteReplay(int32 row, void (*callback)(bool32 success), bool32 u
     int32 count = API.GetSortedUserDBRowCount(globals->taTableID);
     for (int32 i = 0; i < count; ++i) {
         uint32 uuid = API.GetSortedUserDBRowID(globals->taTableID, i);
-        LogHelpers_Print("Deleting Time Attack replay from row #%d", uuid);
+        // LogHelpers_Print("Deleting Time Attack replay from row #%d", uuid);
         API.SetUserDBValue(globals->taTableID, uuid, DBVAR_UINT32, "replayID", &replayID);
     }
 
@@ -127,21 +127,21 @@ void ReplayDB_DeleteReplay(int32 row, void (*callback)(bool32 success), bool32 u
 
 void ReplayDB_DeleteReplay_CB(int32 status)
 {
-    LogHelpers_Print("DeleteReplay_CB(%d)", status);
+    // LogHelpers_Print("DeleteReplay_CB(%d)", status);
 
     API.SaveUserDB(globals->replayTableID, ReplayDB_DeleteReplaySave_CB);
 }
 
 void ReplayDB_DeleteReplaySave_CB(int32 status)
 {
-    LogHelpers_Print("DeleteReplaySave_CB(%d)", status);
+    // LogHelpers_Print("DeleteReplaySave_CB(%d)", status);
 
     API.SaveUserDB(globals->taTableID, ReplayDB_DeleteReplaySave2_CB);
 }
 
 void ReplayDB_DeleteReplaySave2_CB(int32 status)
 {
-    LogHelpers_Print("DeleteReplaySave2_CB(%d)", status);
+    // LogHelpers_Print("DeleteReplaySave2_CB(%d)", status);
 
     if (ReplayDB->deleteCallback) {
         Entity *store = SceneInfo->entity;
@@ -160,14 +160,14 @@ void ReplayDB_LoadDBCallback(int32 status)
     if (status == STATUS_OK) {
         globals->replayTableLoaded = STATUS_OK;
         API.SetupUserDBRowSorting(globals->replayTableID);
-        LogHelpers_Print("Load Succeeded! Replay count: %d", API.GetSortedUserDBRowCount(globals->replayTableID));
+        // LogHelpers_Print("Load Succeeded! Replay count: %d", API.GetSortedUserDBRowCount(globals->replayTableID));
     }
     else {
-        LogHelpers_Print("Load Failed! Creating new Replay DB");
+        // LogHelpers_Print("Load Failed! Creating new Replay DB");
         ReplayDB_CreateDB();
     }
 
-    LogHelpers_Print("Replay DB Slot => %d, Load Status => %d", globals->replayTableID, globals->replayTableLoaded);
+    // LogHelpers_Print("Replay DB Slot => %d, Load Status => %d", globals->replayTableID, globals->replayTableLoaded);
 
     if (ReplayDB->loadCallback) {
         Entity *store = SceneInfo->entity;
