@@ -51,8 +51,8 @@ ICON0		:=	$(PKGFILES)/ICON0.PNG
 SFOXML		:=	../sfo.xml
 
 TITLE		:=	Sonic Mania
-APPID		:=	CUSA07023
-CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
+APPID		:=	SMAP02024
+CONTENTID	:=	UP0001-$(APPID)_00-SONICMANIAPS3000
 
 #---------------------------------------------------------------------------------
 # options for code generation
