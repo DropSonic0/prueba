@@ -5,9 +5,105 @@
 // STANDARD LIBS
 // ================
 #include <stdio.h>
+#include <cstdio> // C++ version of stdio.h
 #include <string.h>
 #include <cmath>
 #include <ctime>
+
+#if defined(__PS3__)
+#include <cstdio>  // For ::snprintf
+#include <cstdlib> // For strtol, strtod
+#include <string>  // For std::string 
+#include <stdarg.h> // For va_list
+// vector and algorithm might be needed if more helpers are moved here later.
+
+// Attempt to explicitly declare snprintf for PS3 if standard headers aren't sufficient for C++ linkage
+// This assumes it exists in the C library (Newlib for ps3toolchain) with this signature.
+extern "C" int snprintf(char* str, size_t size, const char* format, ...);
+// Add vsnprintf declaration as well
+extern "C" int vsnprintf(char* str, size_t size, const char* format, va_list ap);
+
+// PS3-Compatible Number-to-String Helpers (moved from ModAPI.cpp)
+static inline std::string PS3_ToString(int val) {
+    char buffer[32];
+    int len = ::snprintf(buffer, sizeof(buffer), "%d", val);
+    if (len >= 0 && len < (int)sizeof(buffer)) {
+        return std::string(buffer, len);
+    }
+    return std::string(); 
+}
+
+static inline std::string PS3_ToString(float val) {
+    char buffer[64];
+    int len = ::snprintf(buffer, sizeof(buffer), "%.6g", val);
+    if (len >= 0 && len < (int)sizeof(buffer)) {
+        return std::string(buffer, len);
+    }
+    return std::string();
+}
+
+static inline std::string PS3_ToString(size_t val) {
+    char buffer[32]; 
+    int len = ::snprintf(buffer, sizeof(buffer), "%lu", (unsigned long)val);
+    if (len >= 0 && len < (int)sizeof(buffer)) {
+        return std::string(buffer, len);
+    }
+    return std::string();
+}
+
+// PS3-Compatible String-to-Number Helpers (moved from ModAPI.cpp)
+static inline long PS3_Stol(const std::string& str, size_t* idx = nullptr, int base = 10) {
+    const char* c_str = str.c_str();
+    char* end_ptr = nullptr;
+    long val = strtol(c_str, &end_ptr, base);
+    if (idx != nullptr) {
+        *idx = end_ptr - c_str;
+    }
+    return val;
+}
+
+static inline int PS3_Stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
+    return static_cast<int>(PS3_Stol(str, idx, base));
+}
+
+static inline double PS3_Stod(const std::string& str, size_t* idx = nullptr) {
+    const char* c_str = str.c_str();
+    char* end_ptr = nullptr;
+    double val = strtod(c_str, &end_ptr);
+    if (idx != nullptr) {
+        *idx = end_ptr - c_str;
+    }
+    return val;
+}
+
+static inline float PS3_Stof(const std::string& str, size_t* idx = nullptr) {
+    return static_cast<float>(PS3_Stod(str, idx));
+}
+
+#define RSDK_USE_PS3_STRING_CONVERSIONS 1 // Signal that we are using our custom versions
+
+// Undefine std versions if they are macros (unlikely for these, but good practice)
+#undef to_string
+#undef stoi
+#undef stol
+#undef stof
+#undef stod
+
+// Define std::to_string, std::stoi etc. to be our PS3 versions *within this block*
+// This technique avoids needing to #ifdef every call site.
+namespace std {
+    inline std::string to_string(int val) { return ::PS3_ToString(val); }
+    inline std::string to_string(float val) { return ::PS3_ToString(val); }
+    inline std::string to_string(size_t val) { return ::PS3_ToString(val); }
+    // Add other overloads if they become necessary based on compiler errors (e.g., long, unsigned long)
+
+    inline int stoi(const std::string& str, size_t* idx = nullptr, int base = 10) { return ::PS3_Stoi(str, idx, base); }
+    inline long stol(const std::string& str, size_t* idx = nullptr, int base = 10) { return ::PS3_Stol(str, idx, base); }
+    inline float stof(const std::string& str, size_t* idx = nullptr) { return ::PS3_Stof(str, idx); }
+    inline double stod(const std::string& str, size_t* idx = nullptr) { return ::PS3_Stod(str, idx); }
+} // namespace std (override for PS3 block)
+
+#endif // __PS3__
 
 // ================
 // STANDARD TYPES
@@ -99,11 +195,31 @@ enum GameRegions {
 #define RETRO_STANDARD (0)
 #define RETRO_MOBILE   (1)
 
-#define sprintf_s(x, _, ...) snprintf(x, _, __VA_ARGS__)
+// Secure sprintf_s definition
+#if defined _WIN32
+    // Windows has its own sprintf_s, so we don't need a macro.
+    // If it were defined by a general macro above, we would #undef sprintf_s here.
+    // Assuming a general definition might exist, let's ensure it's cleared for _WIN32 if it was defined.
+    #ifdef sprintf_s
+    #undef sprintf_s
+    #endif
+#elif defined __PS3__
+    // For PS3, use ::snprintf. The second argument to this macro will be the buffer size.
+    #ifdef sprintf_s
+    #undef sprintf_s
+    #endif
+    #define sprintf_s(buffer, size, format, ...) ::snprintf(buffer, size, format, ##__VA_ARGS__)
+#else
+    // Default for other platforms (like Linux, macOS if not using WIN32 or PS3 specific)
+    // The second argument to this macro will be the buffer size.
+    #ifdef sprintf_s
+    #undef sprintf_s
+    #endif
+    #define sprintf_s(buffer, size, format, ...) snprintf(buffer, size, format, ##__VA_ARGS__)
+#endif
 
 #if defined _WIN32
-#undef sprintf_s
-
+// (No #undef sprintf_s here anymore, it's handled above)
 #if defined WINAPI_FAMILY
 #if WINAPI_FAMILY != WINAPI_FAMILY_APP
 #define RETRO_PLATFORM   (RETRO_WIN)

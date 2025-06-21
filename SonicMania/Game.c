@@ -854,12 +854,14 @@ void InitGameLogic(void)
     RSDK_REGISTER_OBJECT(Zone);
 
 #if RETRO_USE_MOD_LOADER
+    RSDK.PrintLog(PRINT_NORMAL, "[MOD_FLOW] InitGameLogic: Calling InitModAPI().");
     InitModAPI();
+    RSDK.PrintLog(PRINT_NORMAL, "[MOD_FLOW] InitGameLogic: Returned from InitModAPI().");
 #endif
 }
 
 #if RETRO_USE_MOD_LOADER
-#include "PublicFunctions.c"
+#include "PublicFunctions.h"
 
 void InitModAPI(void)
 {

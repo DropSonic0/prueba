@@ -259,6 +259,7 @@ bool32 RSDK::OpenDataFile(FileInfo *info, const char *filename)
 
 bool32 RSDK::LoadFile(FileInfo *info, const char *filename, uint8 fileMode)
 {
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile] Attempting to load: '%s', Mode: %d, External: %d", filename, fileMode, info->externalFile);
     if (info->file)
         return false;
 
@@ -325,21 +326,26 @@ bool32 RSDK::LoadFile(FileInfo *info, const char *filename, uint8 fileMode)
     }
 #endif
 
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile] Checking packed data files for '%s'.", filename);
     if (!info->externalFile && fileMode == FMODE_RB && useDataPack) {
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]   Attempting to load '%s' from Data.rsdk.", filename);
         return OpenDataFile(info, filename);
     }
 
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile] Checking external file for '%s'. externalFile flag is: %d", filename, info->externalFile);
     // This condition is for files not from DATA.RSDK and for file I/O
     if (fileMode == FMODE_RB || fileMode == FMODE_WB || fileMode == FMODE_RB_PLUS) { // Check if mode is one we handle for fOpen
         if ((info->externalFile || !useDataPack) && (fileMode == FMODE_RB || fileMode == FMODE_RB_PLUS)) {
-
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]   Attempting fOpen on external file: '%s' with mode '%s'", fullFilePath, openModes[fileMode - 1]);
             info->file = fOpen(fullFilePath, openModes[fileMode - 1]);
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     fOpen result: %p (NULL means failure) for '%s'", info->file, fullFilePath);
 
             // If original fails, prepare for variations
             if (!info->file) {
-                char variedPath[0x100];          
-                char filenameBaseCopy[0x100];    
-                char currentVariation[0x100];    
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     Initial fOpen failed for '%s'. Trying case variations.", fullFilePath);
+                char variedPath[0x100];
+                char filenameBaseCopy[0x100];
+                char currentVariation[0x100];
                 
                 const char *originalFilenamePartPtr = strrchr(fullFilePath, '/');
                 const char *winOriginalFilenamePartPtr = strrchr(fullFilePath, '\\');
@@ -452,18 +458,23 @@ bool32 RSDK::LoadFile(FileInfo *info, const char *filename, uint8 fileMode)
                 } 
             } 
         } else if (fileMode == FMODE_WB) { // Write mode: use original path, no case variation
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]   Attempting fOpen (write mode) on external file: '%s' with mode '%s'", fullFilePath, openModes[fileMode - 1]);
             info->file = fOpen(fullFilePath, openModes[fileMode - 1]);
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     fOpen result: %p (NULL means failure) for '%s'", info->file, fullFilePath);
         } else { 
-             // Fallback for any other scenario not explicitly handled (e.g., if fileMode is RB/RB+ but somehow not external and not datapack, or other modes)
+             RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]   Attempting fOpen (fallback) on external file: '%s' with mode '%s'", fullFilePath, openModes[fileMode - 1]);
              info->file = fOpen(fullFilePath, openModes[fileMode - 1]);
+             RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     fOpen result: %p (NULL means failure) for '%s'", info->file, fullFilePath);
         }
     }
     // The original "if (!info->file)" check later in the function will handle actual "File not found" if all attempts fail.
 
     if (!info->file) {
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]   All fOpen attempts FAILED for external file: '%s'", fullFilePath);
 #if !RETRO_USE_ORIGINAL_CODE
         PrintLog(PRINT_NORMAL, "File not found: %s", fullFilePath);
 #endif
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile] Exiting. File: '%s', Success: %d, fileSize: %d, readPos: %d", filename, 0, info->fileSize, info->readPos);
         return false;
     }
 
@@ -471,13 +482,17 @@ bool32 RSDK::LoadFile(FileInfo *info, const char *filename, uint8 fileMode)
     info->fileSize = 0;
 
     if (fileMode != FMODE_WB) {
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     Attempting fSeek to end for size for '%s'", fullFilePath);
         fSeek(info->file, 0, SEEK_END);
         info->fileSize = (int32)fTell(info->file);
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]       fTell (fileSize): %d for '%s'", info->fileSize, fullFilePath);
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile]     Attempting fSeek to beginning for '%s'", fullFilePath);
         fSeek(info->file, 0, SEEK_SET);
     }
 #if !RETRO_USE_ORIGINAL_CODE
     PrintLog(PRINT_NORMAL, "Loaded file %s", fullFilePath);
 #endif
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[LoadFile] Exiting. File: '%s', Success: %d, fileSize: %d, readPos: %d", filename, (info->fileSize > 0 || fileMode == FMODE_WB), info->fileSize, info->readPos);
     return true;
 }
 

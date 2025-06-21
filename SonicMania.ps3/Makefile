@@ -103,9 +103,9 @@ EXTRA_OFLAGS = -falign-functions  -falign-jumps \
 -ftree-vrp \
 -fvect-cost-model=cheap
 
-RSDK_flags	=	-D__PS3__ -DRETRO_STANDALONE=0 -DRETRO_USE_MOD_LOADER=0 -DRETRO_DISABLE_LOG -DGAME_VERSION=5 -DPS3_CONSOLE_MODE
+RSDK_flags	=	-D__PS3__ -DRETRO_STANDALONE=0 -DRETRO_USE_MOD_LOADER=1 -DRETRO_DISABLE_LOG -DGAME_VERSION=5 -DPS3_CONSOLE_MODE
 CFLAGS		=	-g3 -O1 $(EXTRA_OFLAGS) -Wall -mcpu=cell $(MACHDEP) $(INCLUDE) $(RSDK_flags)
-CXXFLAGS	=	$(CFLAGS)
+CXXFLAGS	=	$(CFLAGS) -std=c++11
 
 LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 
@@ -139,7 +139,7 @@ export BUILDDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
-CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(subst PublicFunctions.c,,${wildcard $(dir)/*.c})))
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir ${wildcard $(dir)/*.c}))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(subst xmltest.cpp,,${wildcard $(dir)/*.cpp})))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))

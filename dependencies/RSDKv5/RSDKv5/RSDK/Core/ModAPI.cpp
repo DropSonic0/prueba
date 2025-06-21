@@ -8,14 +8,143 @@ using namespace RSDK;
 #include "Legacy/ModAPILegacy.cpp"
 #endif
 
+// Filesystem include and namespace definition
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8) // GCC 8 for std::filesystem generally
 #include <filesystem>
-#include <stdexcept>
-#include <functional>
-
-#if RETRO_PLATFORM != RETRO_ANDROID
 namespace fs = std::filesystem;
 #else
-bool fs::exists(fs::path path)
+// PS3 specific includes (or for older GCC)
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h> // For S_ISDIR, though often in sys/stat.h
+#include <vector>   // For std::vector
+#include <algorithm> // For std::transform
+// Define dummy fs::path and related types if absolutely necessary to minimize changes,
+// but prefer direct string operations.
+// For fs::filesystem_error, we'll rely on function return codes and manual logging.
+namespace fs {
+    // Define a minimal path like class or use strings directly
+    // For now, we will aim to replace fs::path with std::string directly.
+    // Define dummy directory_options if it's used in a way that's hard to #ifdef out
+    enum class directory_options { follow_directory_symlink = 0 }; // Mimic if needed
+#if RETRO_PLATFORM == RETRO_ANDROID
+    // Keep Android JNI fs functions within this conditional fs namespace
+    // These are defined below, after the PS3 helpers, to maintain existing structure
+#else
+    // For other non-std::filesystem platforms (like PS3 or older GCC),
+    // we'll use PS3_ prefixed helper functions instead of trying to mimic fs:: perfectly.
+#endif
+} // namespace fs (dummy for non-std::filesystem or Android specific fs)
+#endif
+
+#if defined(__PS3__) || (defined(__GNUC__) && __GNUC__ < 8 && !defined(__clang__))
+// PS3 specific includes (or for older GCC)
+// Includes <cstdio>, <cstdlib>, <string> were used by helpers now in RetroEngine.hpp.
+// Filesystem specific includes <dirent.h>, <sys/stat.h>, <unistd.h> remain for PS3_PathExists etc.
+// <vector>, <algorithm> are used by filesystem helpers.
+
+// RSDK_USE_PS3_STRING_CONVERSIONS macro and std:: namespace overrides for string conversions
+// have been moved to RetroEngine.hpp to be alongside their PS3_ helper function definitions.
+
+// PS3 Filesystem Helper Functions (also for older GCC)
+// These remain here as they are more specific to ModAPI's directory scanning needs.
+static bool PS3_PathExists(const std::string& path) {
+    struct stat buffer;
+    return (stat(path.c_str(), &buffer) == 0);
+}
+
+static bool PS3_IsDirectory(const std::string& path) {
+    struct stat buffer;
+    if (stat(path.c_str(), &buffer) != 0) {
+        return false;
+    }
+    return S_ISDIR(buffer.st_mode);
+}
+
+// Non-recursive listing
+static bool PS3_ListDirectory(const std::string& path, std::vector<std::pair<std::string, bool>>& entries) {
+    entries.clear();
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        RSDK::PrintLog(RSDK::PRINT_ERROR, "[MODS] PS3_ListDirectory: Cannot open directory: %s", path.c_str());
+        return false;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        std::string entryName = entry->d_name;
+        if (entryName == "." || entryName == "..") {
+            continue;
+        }
+        std::string fullEntryPath = path + "/" + entryName;
+        bool isDir = PS3_IsDirectory(fullEntryPath);
+        entries.push_back(std::make_pair(entryName, isDir));
+    }
+    closedir(dir);
+    return true;
+}
+
+// Recursive listing for files
+static bool PS3_ListDirectoryRecursive(
+    const std::string& basePath,
+    const std::string& currentRelPath,
+    std::vector<std::string>& foundFilePaths
+) {
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_FS_PS3] RecursiveScan START: Path='%s', RelPath='%s'", basePath.c_str(), currentRelPath.c_str());
+    std::string currentAbsolutePath = basePath;
+    if (!currentRelPath.empty()) {
+        if (basePath.back() == '/' && currentRelPath.front() == '/') { // Avoid double slashes
+            currentAbsolutePath = basePath + currentRelPath.substr(1);
+        } else if (basePath.back() != '/' && currentRelPath.front() != '/') {
+            currentAbsolutePath = basePath + "/" + currentRelPath;
+        } else {
+            currentAbsolutePath = basePath + currentRelPath;
+        }
+    }
+    
+    DIR *dir = opendir(currentAbsolutePath.c_str());
+    if (!dir) {
+        RSDK::PrintLog(RSDK::PRINT_ERROR, "[MODS] PS3_ListDirectoryRecursive: Cannot open directory: %s", currentAbsolutePath.c_str());
+        return false;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name = entry->d_name;
+        if (name == "." || name == "..") {
+            continue;
+        }
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_FS_PS3]   Found entry: '%s' in '%s'", name.c_str(), currentAbsolutePath.c_str());
+        std::string entryAbsolutePath = currentAbsolutePath + "/" + name;
+        std::string entryRelativePath = currentRelPath.empty() ? name : currentRelPath + "/" + name;
+        
+        struct stat entryStat;
+        if (stat(entryAbsolutePath.c_str(), &entryStat) == 0) {
+            if (S_ISDIR(entryStat.st_mode)) {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_FS_PS3]     Descending into: '%s'", entryRelativePath.c_str());
+                PS3_ListDirectoryRecursive(basePath, entryRelativePath, foundFilePaths);
+            } else {
+                // Apply path normalization (lowercase, convert '\' to '/')
+                std::string normalizedPath = entryRelativePath;
+                std::transform(normalizedPath.begin(), normalizedPath.end(), normalizedPath.begin(),
+                                [](unsigned char c) { return c == '\\' ? '/' : std::tolower(c); });
+                foundFilePaths.push_back(normalizedPath);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_FS_PS3]       Added file: '%s'", normalizedPath.c_str());
+            }
+        } else {
+            RSDK::PrintLog(RSDK::PRINT_ERROR, "[MODS] PS3_ListDirectoryRecursive: Cannot stat file/directory: %s", entryAbsolutePath.c_str());
+        }
+    }
+    closedir(dir);
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_FS_PS3] RecursiveScan END: Path='%s', RelPath='%s'", basePath.c_str(), currentRelPath.c_str());
+    return true;
+}
+#endif // __PS3__ or older GCC
+
+#if RETRO_PLATFORM == RETRO_ANDROID
+// Definitions for Android JNI fs functions, now potentially within the fs namespace from above
+// Ensure these are correctly scoped, especially if fs namespace is defined conditionally
+namespace fs { // This might need adjustment based on how the above fs namespace is structured
+bool exists(fs::path path)
 {
     auto *jni        = GetJNISetup();
     jbyteArray array = jni->env->NewByteArray(path.string().length());
@@ -23,7 +152,7 @@ bool fs::exists(fs::path path)
     return jni->env->CallBooleanMethod(jni->thiz, fsExists, array);
 }
 
-bool fs::is_directory(fs::path path)
+bool is_directory(fs::path path)
 {
     auto *jni        = GetJNISetup();
     jbyteArray array = jni->env->NewByteArray(path.string().length());
@@ -31,14 +160,18 @@ bool fs::is_directory(fs::path path)
     return jni->env->CallBooleanMethod(jni->thiz, fsIsDir, array);
 }
 
-fs::path_list fs::directory_iterator(fs::path path)
+fs::path_list directory_iterator(fs::path path)
 {
     auto *jni        = GetJNISetup();
     jbyteArray array = jni->env->NewByteArray(path.string().length());
     jni->env->SetByteArrayRegion(array, 0, path.string().length(), (jbyte *)path.string().c_str());
     return fs::path_list((jobjectArray)jni->env->CallObjectMethod(jni->thiz, fsDirIter, array));
 }
+} // namespace fs for Android
 #endif
+
+#include <stdexcept> // Moved down to ensure it's not affecting fs namespace logic
+#include <functional> // Moved down
 
 #include "iniparser/iniparser.h"
 
@@ -86,6 +219,7 @@ std::string trim(const std::string &s)
 
 void RSDK::InitModAPI(bool32 getVersion)
 {
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] InitModAPI: Entered. getVersion = %d", getVersion);
     memset(modFunctionTable, 0, sizeof(modFunctionTable));
 
     // ============================
@@ -199,7 +333,10 @@ void RSDK::InitModAPI(bool32 getVersion)
 
     superLevels.clear();
     inheritLevel = 0;
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] InitModAPI: Calling LoadMods().");
     LoadMods(false, getVersion);
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] InitModAPI: Returned from LoadMods().");
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] InitModAPI: Exiting.");
 }
 
 void RSDK::SortMods()
@@ -360,12 +497,23 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
         targetFileStr = std::string(pathLower);
     }
 
-    fs::path dataPath(modDir);
+    std::string dataPathStr = modDir; // fs::path dataPath(modDir);
     int32 dy = currentScreen->center.y - 32;
     int32 dx = currentScreen->center.x;
 
+    // Normalize targetFileStr early if it's used
+    if (targetFile && targetFileStr.empty()) { // Should have been done before, but ensure
+        char pathLower[0x100];
+        memset(pathLower, 0, sizeof(char) * 0x100);
+        for (int32 c = 0; c < strlen(targetFile); ++c) pathLower[c] = tolower(targetFile[c]);
+        targetFileStr = std::string(pathLower);
+        // Normalize slashes for consistency if needed, though primarily for map keys
+        std::replace(targetFileStr.begin(), targetFileStr.end(), '\\', '/');
+    }
+    
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8)
     if (targetFile) {
-        if (fs::exists(fs::path(modDir + "/" + targetFileStr))) {
+        if (fs::exists(fs::path(modDir + "/" + targetFileStr))) { // fs::path used for fs::exists
             info->fileMap.insert(std::pair<std::string, std::string>(targetFileStr, modDir + "/" + targetFileStr));
             return true;
         }
@@ -373,7 +521,7 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
             return false;
     }
 
-    if (fs::exists(dataPath) && fs::is_directory(dataPath)) {
+    if (fs::exists(fs::path(dataPathStr)) && fs::is_directory(fs::path(dataPathStr))) { // fs::path used here
         try {
             if (loadingBar) {
                 currentScreen = &screens[0];
@@ -384,10 +532,9 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
                 RenderDevice::FlipScreen();
             }
 
-            auto dirIterator = fs::recursive_directory_iterator(dataPath, fs::directory_options::follow_directory_symlink);
+            auto dirIterator = fs::recursive_directory_iterator(fs::path(dataPathStr), fs::directory_options::follow_directory_symlink); // fs::path used
 
             std::vector<fs::directory_entry> files;
-
             int32 renders = 1;
             int32 size    = 0;
 
@@ -396,7 +543,6 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
                 if (!dirFile.is_directory()) {
 #endif
                     files.push_back(dirFile);
-
                     if (loadingBar && ++size >= RENDER_COUNT * renders) {
                         DrawRectangle(dx - 0x80 + 0x10, dy + 48, 0x100 - 0x20, 0x10, 0x000000, 0xFF, INK_NONE, true);
                         DrawDevString((std::to_string(size) + " files").c_str(), currentScreen->center.x, dy + 52, ALIGN_CENTER, 0xFFFFFF);
@@ -413,7 +559,7 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
             int32 bars = 1;
 
             for (auto dirFile : files) {
-                std::string folderPath = dirFile.path().string().substr(dataPath.string().length() + 1);
+                std::string folderPath = dirFile.path().string().substr(fs::path(dataPathStr).string().length() + 1); // fs::path used
                 std::transform(folderPath.begin(), folderPath.end(), folderPath.begin(),
                                [](unsigned char c) { return c == '\\' ? '/' : std::tolower(c); });
 
@@ -432,6 +578,59 @@ bool32 RSDK::ScanModFolder(ModInfo *info, const char *targetFile, bool32 fromLoa
             PrintLog(PRINT_ERROR, "Mod File Scanning Error: %s", fe.what());
         }
     }
+#else // PS3 or older GCC path
+    if (targetFile) {
+        if (PS3_PathExists(modDir + "/" + targetFileStr)) {
+            info->fileMap.insert(std::pair<std::string, std::string>(targetFileStr, modDir + "/" + targetFileStr));
+            return true;
+        }
+        else
+            return false;
+    }
+
+    if (PS3_PathExists(dataPathStr) && PS3_IsDirectory(dataPathStr)) {
+        if (loadingBar) {
+            currentScreen = &screens[0];
+            DrawRectangle(dx - 0x80 + 0x10, dy + 48, 0x100 - 0x20, 0x10, 0x000000, 0xFF, INK_NONE, true);
+            DrawDevString(fromLoadMod ? "Getting count..." : ("Scanning " + info->id + "...").c_str(), currentScreen->center.x, dy + 52,
+                          ALIGN_CENTER, 0xFFFFFF);
+            RenderDevice::CopyFrameBuffer();
+            RenderDevice::FlipScreen();
+        }
+
+        std::vector<std::string> foundFiles;
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_SCAN] Scanning mod folder (PS3): Mod='%s', DataPath='%s'", info->id.c_str(), dataPathStr.c_str());
+        // dataPathStr here is the mod's specific data folder, e.g., "mods/MyMod/Data"
+        // Pass dataPathStr as basePath, and an empty string for currentRelPath to start.
+        if (PS3_ListDirectoryRecursive(dataPathStr, "", foundFiles)) {
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_SCAN]   PS3_ListDirectoryRecursive completed. Found %d files for mod '%s'.", (int)foundFiles.size(), info->id.c_str());
+            int count = 0;
+            if (foundFiles.empty()) {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_SCAN]   No files found by PS3_ListDirectoryRecursive for mod '%s'. Skipping fileMap population.", info->id.c_str());
+            }
+
+            for (const std::string& relativeFilePath : foundFiles) {
+                count++;
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d] Loop entry for: '%s'", count, (int)foundFiles.size(), relativeFilePath.c_str());
+
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]   Creating fullPathToModFile for '%s'...", count, (int)foundFiles.size(), relativeFilePath.c_str());
+                std::string fullPathToModFile = dataPathStr + "/" + relativeFilePath;
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]     fullPathToModFile created: '%s'", count, (int)foundFiles.size(), fullPathToModFile.c_str());
+                
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]   Preparing pair for: '%s'", count, (int)foundFiles.size(), relativeFilePath.c_str());
+                std::pair<std::string, std::string> mapEntry(relativeFilePath, fullPathToModFile);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]     Pair created. Key: '%s', Value: '%s'", count, (int)foundFiles.size(), mapEntry.first.c_str(), mapEntry.second.c_str());
+                
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]   Attempting map.insert for: '%s'", count, (int)foundFiles.size(), relativeFilePath.c_str());
+                info->fileMap.insert(mapEntry);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_MAP][%d/%d]   Map.insert successful for: '%s'", count, (int)foundFiles.size(), relativeFilePath.c_str());
+            }
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_SCAN]   Finished populating fileMap for mod '%s'. Processed %d file(s).", info->id.c_str(), count);
+        } else {
+            RSDK::PrintLog(PRINT_ERROR, "[MODS] ScanModFolder: Failed to recursively list directory: %s", dataPathStr.c_str());
+        }
+    }
+#endif // !__PS3__ && GCC >=8 ELSE
 
     if (loadingBar && fromLoadMod) {
         DrawRectangle(dx - 0x80 + 0x10, dy + 48, 0x100 - 0x20, 0x10, 0x000080, 0xFF, INK_NONE, true);
@@ -499,6 +698,8 @@ void RSDK::UnloadMods()
 
 void RSDK::LoadMods(bool newOnly, bool32 getVersion)
 {
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Entered. newOnly = %d, getVersion = %d", newOnly, getVersion);
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD] LoadMods START. SKU::userFileDir = '%s'", RSDK::SKU::userFileDir);
     if (!newOnly) {
         UnloadMods();
 
@@ -514,9 +715,13 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
     using namespace std;
     char modBuf[0x100];
     sprintf_s(modBuf, sizeof(modBuf), "%smods", SKU::userFileDir);
-    fs::path modPath(modBuf);
+    std::string modPathStr = modBuf; // fs::path modPath(modBuf);
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD]   Mods directory path constructed as: '%s'", modPathStr.c_str());
 
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8)
+    fs::path modPath(modPathStr); // Convert to fs::path for std::filesystem operations
     if (fs::exists(modPath) && fs::is_directory(modPath)) {
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Processing modconfig.ini entries...");
         string mod_config  = modPath.string() + "/modconfig.ini";
         FileIO *configFile = fOpen(mod_config.c_str(), "r");
         if (configFile) {
@@ -528,29 +733,41 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
             iniparser_getseckeys(ini, "Mods", keys);
 
             for (int32 m = 0; m < c; ++m) {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Iteration %d for key '%s'", m, keys[m]);
                 if (newOnly && std::find_if(modList.begin(), modList.end(), [&keys, &m](ModInfo mod) {
                                    return mod.folderName == string(keys[m] + 5);
                                }) != modList.end())
                     continue;
+                std::string folderNameStr = string(keys[m] + 5);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD]   Processing mod entry/folder (from modconfig.ini): '%s'", folderNameStr.c_str());
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Initializing ModInfo for '%s'.", (keys[m] + 5));
                 ModInfo info  = {};
                 bool32 active = iniparser_getboolean(ini, keys[m], false);
-                bool32 loaded = LoadMod(&info, modPath.string(), string(keys[m] + 5), active, getVersion);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Calling LoadMod() for folder '%s', active=%d.", (keys[m] + 5), active);
+                bool32 loaded = LoadMod(&info, modPath.string(), folderNameStr, active, getVersion);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: LoadMod() returned %d for '%s'. ID set to '%s'.", loaded, (keys[m] + 5), info.id.c_str());
                 if (info.id.empty()) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Mod %s doesn't exist!", keys[m] + 5);
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD] Mod %s doesn't exist or mod.ini missing/invalid ID!", keys[m] + 5);
                     continue;
                 }
                 else if (!loaded) {
-                    PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s.", info.id.c_str(), active ? "Y" : "N");
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD] Failed to load mod %s (LoadMod returned false). Active: %s", info.id.c_str(), active ? "Y" : "N");
                     info.active = false;
                 }
                 else
                     PrintLog(PRINT_NORMAL, "[MOD] Loaded mod %s! Active: %s", info.id.c_str(), active ? "Y" : "N");
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Attempting modList.push_back for mod ID '%s'.", info.id.c_str());
                 modList.push_back(info);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: modList.push_back successful for mod ID '%s'. modList size: %d", info.id.c_str(), (int)modList.size());
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Finished iteration %d for key '%s'.", m, keys[m]);
             }
             delete[] keys;
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Finished processing ALL modconfig.ini entries. Before iniparser_freedict.");
             iniparser_freedict(ini);
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: After iniparser_freedict.");
         }
 
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Processing direct mod folder scan...");
         try {
             auto rdi = fs::directory_iterator(modPath);
             for (auto de : rdi) {
@@ -558,6 +775,7 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
                     fs::path modDirPath = de.path();
                     ModInfo info        = {};
                     std::string folder  = modDirPath.filename().string();
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD]   Processing mod entry/folder (direct scan): '%s'", folder.c_str());
 
                     if (std::find_if(modList.begin(), modList.end(), [&folder](ModInfo m) { return m.folderName == folder; }) == modList.end()) {
 
@@ -575,51 +793,117 @@ void RSDK::LoadMods(bool newOnly, bool32 getVersion)
         } catch (fs::filesystem_error &fe) {
             PrintLog(PRINT_ERROR, "Mods folder scanning error: %s", fe.what());
         }
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Finished direct mod folder scan.");
     }
+#else // PS3 or older GCC path
+    if (PS3_PathExists(modPathStr) && PS3_IsDirectory(modPathStr)) {
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Processing modconfig.ini entries...");
+        string mod_config_path = modPathStr + "/modconfig.ini";
+        FileIO *configFile = fOpen(mod_config_path.c_str(), "r");
+        if (configFile) {
+            fClose(configFile);
+            auto ini = iniparser_load(mod_config_path.c_str());
 
+            int32 c           = iniparser_getsecnkeys(ini, "Mods");
+            const char **keys = new const char *[c];
+            iniparser_getseckeys(ini, "Mods", keys);
+
+            for (int32 m = 0; m < c; ++m) {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Iteration %d for key '%s'", m, keys[m]);
+                if (newOnly && std::find_if(modList.begin(), modList.end(), [&keys, &m](ModInfo mod) {
+                                   return mod.folderName == string(keys[m] + 5);
+                               }) != modList.end())
+                    continue;
+                std::string folderNameStr = string(keys[m] + 5);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD]   Processing mod entry/folder (from modconfig.ini, PS3_Path): '%s'", folderNameStr.c_str());
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Initializing ModInfo for '%s'.", (keys[m] + 5));
+                ModInfo info  = {};
+                bool32 active = iniparser_getboolean(ini, keys[m], false);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Calling LoadMod() for folder '%s', active=%d.", (keys[m] + 5), active);
+                bool32 loaded = LoadMod(&info, modPathStr, folderNameStr, active, getVersion);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: LoadMod() returned %d for '%s'. ID set to '%s'.", loaded, (keys[m] + 5), info.id.c_str());
+                 if (info.id.empty()) { // Check if LoadMod actually populated the id
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD] Mod entry %s in modconfig.ini seems to point to a non-existent or invalid mod folder (or mod.ini missing/invalid ID)!", folderNameStr.c_str());
+                    // Do not add to modList if it's essentially a dud
+                    continue;
+                }
+                else if (!loaded) {
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD] Failed to load mod %s (from modconfig.ini, LoadMod returned false). Active: %s", info.id.c_str(), active ? "Y" : "N");
+                    info.active = false; // Ensure it's marked inactive if loading failed
+                }
+                else {
+                    PrintLog(PRINT_NORMAL, "[MOD] Loaded mod %s (from modconfig.ini)! Active: %s", info.id.c_str(), active ? "Y" : "N");
+                }
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Attempting modList.push_back for mod ID '%s'.", info.id.c_str());
+                modList.push_back(info);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: modList.push_back successful for mod ID '%s'. modList size: %d", info.id.c_str(), (int)modList.size());
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods/modconfig_loop: Finished iteration %d for key '%s'.", m, keys[m]);
+            }
+            delete[] keys;
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Finished processing ALL modconfig.ini entries. Before iniparser_freedict.");
+            iniparser_freedict(ini);
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: After iniparser_freedict.");
+        }
+        
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Processing direct mod folder scan...");
+        // Iterate through directories for mods not in modconfig.ini
+        std::vector<std::pair<std::string, bool>> dirEntries;
+        if (PS3_ListDirectory(modPathStr, dirEntries)) {
+            for (const auto& de_pair : dirEntries) {
+                if (de_pair.second) { // Check if it's a directory
+                    std::string folder = de_pair.first;
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MODS_LOAD]   Processing mod entry/folder (direct scan, PS3_Path): '%s'", folder.c_str());
+                    // Check if this mod folder was already processed via modconfig.ini
+                    if (std::find_if(modList.begin(), modList.end(), [&folder](const ModInfo& m_info){ return m_info.folderName == folder; }) == modList.end()) {
+                        ModInfo info = {};
+                        const std::string modDir = modPathStr + "/" + folder;
+                        FileIO *f = fOpen((modDir + "/mod.ini").c_str(), "r");
+                        if (f) {
+                            fClose(f);
+                            // LoadMod will set active to false by default if not in modconfig.ini
+                            LoadMod(&info, modPathStr, folder, false, getVersion);
+                            if (!info.id.empty()) { // Ensure mod.ini was valid and id was set
+                                modList.push_back(info);
+                                PrintLog(PRINT_NORMAL, "[MOD] Found and loaded mod %s (not in modconfig.ini, defaulting to inactive).", info.id.c_str());
+                            } else {
+                                PrintLog(PRINT_NORMAL, "[MOD] Found folder %s which looks like a mod, but its mod.ini is invalid or missing ID.", folder.c_str());
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            PrintLog(PRINT_ERROR, "Mods folder scanning error: Could not list directory %s", modPathStr.c_str());
+        }
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Finished direct mod folder scan.");
+    }
+#endif // !__PS3__ && GCC >=8 ELSE
+
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: All mod folder processing complete.");
+
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Attempting 'Mod loading done!' screen draw...");
     int32 dy = currentScreen->center.y - 32;
     DrawRectangle(currentScreen->center.x - 128, dy, 0x100, 0x48, 0x80, 0xFF, INK_NONE, true);
     DrawDevString("Mod loading done!", currentScreen->center.x, dy + 28, ALIGN_CENTER, 0xFFFFFF);
     RenderDevice::CopyFrameBuffer();
     RenderDevice::FlipScreen();
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: 'Mod loading done!' screen draw finished.");
 
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Calling SortMods() (after drawing).");
     SortMods();
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Returned from SortMods().");
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Calling LoadModSettings() (after SortMods).");
     LoadModSettings();
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Returned from LoadModSettings().");
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMods: Exiting.");
 }
 
-void loadCfg(ModInfo *info, const std::string &path)
-{
-    FileInfo cfg;
-    InitFileInfo(&cfg);
-    cfg.externalFile = true;
-    // CFG FILE READ
-    if (LoadFile(&cfg, path.c_str(), FMODE_RB)) {
-        int32 catCount = ReadInt8(&cfg);
-        for (int32 c = 0; c < catCount; ++c) {
-            char catBuf[0x100];
-            ReadString(&cfg, catBuf);
-            int32 keyCount = ReadInt8(&cfg);
-            for (int32 k = 0; k < keyCount; ++k) {
-                // ReadString except w packing the type bit
-                uint8 size   = ReadInt8(&cfg);
-                char *keyBuf = new char[size & 0x7F];
-                ReadBytes(&cfg, keyBuf, size & 0x7F);
-                keyBuf[size & 0x7F] = 0;
-                uint8 type          = size & 0x80;
-                if (!type) {
-                    char buf[0xFFFF];
-                    ReadString(&cfg, buf);
-                    info->config[catBuf][keyBuf] = buf;
-                }
-                else
-                    info->config[catBuf][keyBuf] = std::to_string(ReadInt32(&cfg, false));
-                delete[] keyBuf;
-            }
-        }
-
-        CloseFile(&cfg);
-    }
-}
+void loadCfg(ModInfo *info, const char *path)
+{ // Start of new function body
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] loadCfg: Entered (Minimal Test). ModID: '%s', Path: '%s'", (info ? info->id.c_str() : "NULL_INFO"), path);
+    // Intentionally doing nothing else for this specific test.
+    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] loadCfg: Exiting (Minimal Test). ModID: '%s', Path: '%s'", (info ? info->id.c_str() : "NULL_INFO"), path);
+} // End of new function body
 
 bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::string &folder, bool32 active, bool32 getVersion)
 {
@@ -696,8 +980,10 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
         // ASSETS
         DrawStatus("Scanning mod folder...");
         ScanModFolder(info, getVersion ? "Data/Game/GameConfig.bin" : nullptr, true);
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Returned from ScanModFolder for mod '%s'.", info->id.c_str());
 
         if (!getVersion) {
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Processing LOGIC section for mod '%s'.", info->id.c_str());
             // LOGIC
             std::string logic(iniparser_getstring(modIni, ":LogicFile", ""));
             if (logic.length()) {
@@ -707,36 +993,39 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                     buf = trim(buf);
                     DrawStatus(("Starting logic " + buf + "...").c_str());
                     bool linked = false;
-
-                    fs::path file(modDir + "/" + buf);
+                    
+                    std::string logicFilePath = modDir + "/" + buf;
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8)
+                    fs::path file(logicFilePath); // fs::path for std::filesystem
                     Link::Handle linkHandle = Link::Open(file.string().c_str());
+#else
+                    Link::Handle linkHandle = Link::Open(logicFilePath.c_str()); // std::string for PS3/older GCC
+#endif
 
                     if (linkHandle) {
                         modLink linkModLogic          = (modLink)Link::GetSymbol(linkHandle, "LinkModLogic");
                         const ModVersionInfo *modInfo = (const ModVersionInfo *)Link::GetSymbol(linkHandle, "modInfo");
                         if (!modInfo) {
-                            // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to find modInfo", file.string().c_str());
-
+                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to find modInfo in logic file '%s'", logicFilePath.c_str());
+                            // ... (rest of error handling)
                             iniparser_freedict(modIni);
                             currentMod = cur;
                             return false;
                         }
 
                         if (modInfo->engineVer != targetModVersion.engineVer) {
-                            // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
                             PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' engineVer %d does not match expected engineVer of %d",
-                                     file.string().c_str(), modInfo->engineVer, targetModVersion.engineVer);
-
+                                     logicFilePath.c_str(), modInfo->engineVer, targetModVersion.engineVer);
+                            // ... (rest of error handling)
                             iniparser_freedict(modIni);
                             currentMod = cur;
                             return false;
                         }
 
                         if (modInfo->modLoaderVer != targetModVersion.modLoaderVer) {
-                            // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                            PrintLog(PRINT_NORMAL, "[MOD] ERROR: Logic file '%s' modLoaderVer  %d does not match expected modLoaderVer of %d",
-                                     file.string().c_str(), modInfo->modLoaderVer, targetModVersion.modLoaderVer);
+                            PrintLog(PRINT_NORMAL, "[MOD] WARNING: Logic file '%s' modLoaderVer %d does not match expected modLoaderVer of %d",
+                                     logicFilePath.c_str(), modInfo->modLoaderVer, targetModVersion.modLoaderVer);
+                            // Not returning false, just a warning.
                         }
 
                         if (linkModLogic) {
@@ -754,16 +1043,19 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                     }
 
                     if (!linked) {
-                        // PrintLog(PRINT_NORMAL, "[MOD] Failed to load mod %s...", folder.c_str());
-                        PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to link logic '%s'", file.string().c_str());
-
+                        PrintLog(PRINT_NORMAL, "[MOD] ERROR: Failed to link logic from file '%s'", logicFilePath.c_str());
+                        // ... (rest of error handling)
                         iniparser_freedict(modIni);
                         currentMod = cur;
                         return false;
                     }
                 }
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Finished LOGIC section for mod '%s'.", info->id.c_str());
+            } else {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: No LogicFile specified for mod '%s'.", info->id.c_str());
             }
 
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Processing SETTINGS section for mod '%s'.", info->id.c_str());
             // SETTINGS
             FileIO *set = fOpen((modDir + "/modSettings.ini").c_str(), "r");
             if (set) {
@@ -794,52 +1086,89 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                     info->settings.insert(pair<string, map<string, string>>("", secset));
                 }
                 iniparser_freedict(modSettingsIni);
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Finished SETTINGS section for mod '%s'.", info->id.c_str());
+            } else {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: No modSettings.ini found for mod '%s'.", info->id.c_str());
             }
-            // CONFIG
-            loadCfg(info, modDir + "/modConfig.cfg");
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Processing CONFIG section for mod '%s'.", info->id.c_str()); // Existing
 
-            std::string cfg(iniparser_getstring(modIni, ":ConfigFile", ""));
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Preparing path string for modConfig.cfg, Mod: '%s'", info->id.c_str()); 
+            std::string configFilePath_modConfig = modDir + "/modConfig.cfg"; // Renamed variable for clarity
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod:   Path string created: '%s', Mod: '%s'", configFilePath_modConfig.c_str(), info->id.c_str()); 
+
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Calling loadCfg with pre-built path for modConfig.cfg, Mod: '%s'", info->id.c_str()); 
+            loadCfg(info, configFilePath_modConfig.c_str()); // Use the new variable
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Returned from loadCfg for modConfig.cfg, Mod: '%s'", info->id.c_str()); // Existing
+
+            std::string cfg_ini(iniparser_getstring(modIni, ":ConfigFile", ""));
             bool saveCfg = false;
-            if (cfg.length() && info->active) {
-                std::istringstream stream(cfg);
+            if (cfg_ini.length()) {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Processing :ConfigFile list '%s' for mod '%s'", cfg_ini.c_str(), info->id.c_str());
+                std::istringstream stream(cfg_ini);
                 std::string buf;
                 while (std::getline(stream, buf, ',')) {
                     buf = trim(buf);
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod:   Processing :ConfigFile entry '%s'", buf.c_str());
                     DrawStatus(("Reading config " + buf + "...").c_str());
 
                     int32 mode = 0;
-                    fs::path file;
+                    std::string configFilePath; // Used for messages and fOpen
+
                     if (MODAPI_ENDS_WITH(".ini")) {
-                        file = fs::path(modDir + "/" + buf + ".ini");
+                        configFilePath = modDir + "/" + buf; // buf already includes .ini
                         mode = 1;
                     }
                     else if (MODAPI_ENDS_WITH(".cfg")) {
-                        file = fs::path(modDir + "/" + buf + ".cfg");
+                        configFilePath = modDir + "/" + buf; // buf already includes .cfg
                         mode = 2;
                     }
+                    // The original code had a typo here, it should check buf directly, not buf + ".ini"
+                    // Assuming MODAPI_ENDS_WITH is correct and buf contains the full filename including extension.
 
-                    if (!mode) {
-                        file = fs::path(modDir + "/" + buf + ".ini");
-                        if (fs::exists(file))
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8)
+                    fs::path fsPathForExistenceCheck; // Only for fs::exists
+                    if (!mode) { // If mode not determined by extension, try checking existence
+                        fsPathForExistenceCheck = fs::path(modDir + "/" + buf + ".ini"); // Try .ini
+                        if (fs::exists(fsPathForExistenceCheck)) {
                             mode = 1;
+                            configFilePath = modDir + "/" + buf + ".ini";
+                        }
+                    }
+                    if (!mode) { // Then try .cfg
+                        fsPathForExistenceCheck = fs::path(modDir + "/" + buf + ".cfg");
+                        if (fs::exists(fsPathForExistenceCheck)) {
+                            mode = 2;
+                            configFilePath = modDir + "/" + buf + ".cfg";
+                        }
+                    }
+#else // PS3 or older GCC
+                    if (!mode) { // If mode not determined by extension, try checking existence
+                        std::string tempPathIni = modDir + "/" + buf + ".ini";
+                        if (PS3_PathExists(tempPathIni)) {
+                            mode = 1;
+                            configFilePath = tempPathIni;
+                        }
                     }
                     if (!mode) {
-                        file = fs::path(modDir + "/" + buf + ".cfg");
-                        if (fs::exists(file))
+                        std::string tempPathCfg = modDir + "/" + buf + ".cfg";
+                        if (PS3_PathExists(tempPathCfg)) {
                             mode = 2;
+                            configFilePath = tempPathCfg;
+                        }
                     }
-
-                    // if fail just free do nothing
-                    if (!mode)
+#endif
+                    if (!mode) { // if still no mode, cannot determine file type
+                        PrintLog(PRINT_NORMAL, "[MOD] Could not determine type or find config file: %s (or .ini/.cfg variant)", buf.c_str());
                         continue;
-
-                    if (mode == 1) {
-                        FileIO *set = fOpen(file.string().c_str(), "r");
+                    }
+                    
+                    if (mode == 1) { // .ini file
+                        FileIO *set = fOpen(configFilePath.c_str(), "r");
                         if (set) {
-                            saveCfg = true;
+                            saveCfg = true; // Mark that we might need to save back to combined modConfig.cfg
                             fClose(set);
                             using namespace std;
-                            auto cfgIni = iniparser_load(file.string().c_str());
+                            auto cfgIni = iniparser_load(configFilePath.c_str());
                             int32 sec   = iniparser_getnsec(cfgIni);
                             for (int32 i = 0; i < sec; ++i) {
                                 const char *secn  = iniparser_getsecname(cfgIni, i);
@@ -851,11 +1180,18 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                                 delete[] keys;
                             }
                             iniparser_freedict(cfgIni);
+                        } else {
+                             PrintLog(PRINT_ERROR, "[MOD] Failed to open .ini config file: %s", configFilePath.c_str());
                         }
                     }
-                    else if (mode == 2)
-                        loadCfg(info, file.string());
+                    else if (mode == 2) { // .cfg file
+                        loadCfg(info, configFilePath.c_str()); // Assumes loadCfg handles its own fOpen/exists checks if necessary
+                    }
+                    RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod:   Finished :ConfigFile entry '%s'", buf.c_str());
                 }
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Finished processing :ConfigFile list for mod '%s'.", info->id.c_str());
+            } else {
+                RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: No :ConfigFile specified in mod.ini for mod '%s'.", info->id.c_str());
             }
 
             if (saveCfg && info->config.size()) {
@@ -894,10 +1230,16 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
                 }
                 fClose(cfg);
             }
+            RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Finished CONFIG section for mod '%s'.", info->id.c_str());
+        } else {
+             RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Skipping LOGIC/SETTINGS/CONFIG due to getVersion=1 for mod '%s'.", info->id.c_str());
         }
 
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Attempting iniparser_freedict(modIni) for mod '%s'.", info->id.c_str());
         iniparser_freedict(modIni);
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Successfully returned from iniparser_freedict(modIni) for mod '%s'.", info->id.c_str());
         currentMod = cur;
+        RSDK::PrintLog(RSDK::PRINT_NORMAL, "[MOD_FLOW] LoadMod: Exiting function for mod '%s', returning true.", info->id.c_str());
         return true;
     }
     return false;
@@ -908,15 +1250,22 @@ void RSDK::SaveMods()
     ModInfo *cur = currentMod;
     char modBuf[0x100];
     sprintf_s(modBuf, sizeof(modBuf), "%smods/", SKU::userFileDir);
-    fs::path modPath(modBuf);
+    std::string modPathStr = modBuf; // fs::path modPath(modBuf);
 
     SortMods();
 
     PrintLog(PRINT_NORMAL, "[MOD] Saving mods...");
 
+#if !defined(__PS3__) && (!defined(__GNUC__) || __GNUC__ >= 8)
+    fs::path modPath(modPathStr); // For fs::exists and fs::is_directory
     if (fs::exists(modPath) && fs::is_directory(modPath)) {
         std::string mod_config = modPath.string() + "/modconfig.ini";
         FileIO *file           = fOpen(mod_config.c_str(), "w");
+#else
+    if (PS3_PathExists(modPathStr) && PS3_IsDirectory(modPathStr)) {
+        std::string mod_config_path = modPathStr + "/modconfig.ini";
+        FileIO *file                = fOpen(mod_config_path.c_str(), "w");
+#endif
 
         WriteText(file, "[Mods]\n");
 
