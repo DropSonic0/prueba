@@ -31,6 +31,14 @@ distribution.
 #   include <cstddef>
 #   include <cstdarg>
 #endif
+#include <stdio.h> // Added for snprintf/vsnprintf
+
+#if defined(__PS3__)
+// Explicitly declare C-linkage for PS3 toolchain if standard headers are insufficient
+// This helps the C++ compiler find the C library functions.
+extern "C" int snprintf(char* str, size_t size, const char* format, ...);
+extern "C" int vsnprintf(char* str, size_t size, const char* format, va_list ap);
+#endif
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)
 	// Microsoft Visual Studio, version 2005 and higher. Not WinCE.
